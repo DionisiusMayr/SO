@@ -449,6 +449,12 @@ A função *clone()* da glibc possui os seguintes argumentos:
 
 * **flags**: constantes que indicam o que será compartilhado entre o processo pai e o processo filho, como, por exemplo, os vetores de arquivos abertos, as páginas da memória virtual, *signal handlers*, entre outros. Pode-se conferir as *flags* na seção abaixo.
 
+### Retorno da função
+
+Quando a função do  processo filho encerrar, este retornará o valor da função passada e será o código de saída para o processo filho (a thread do processo filho também pode ser terminada explicitamente chamando *exit(2)* ou recebendo um sinal). 
+
+Além disso, segundo o manual, o byte menos significativo contém o número do *termination signal*, que é enviado quando o processo filho termina. Se nenhum sinal é especificado diferentemente de *SIGCHLD*, então o processo pai deve especificar a opção *__WALL* ou *__WCLONE* quando espera pelo filho com wait(2).
+
 ## Clone flags
 
 Em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/linux/sched.h linux/include/uapi/linux/sched.h] estão definidas as políticas de escalonamento e as *cloning flags*, apresentadas abaixo:
@@ -479,12 +485,6 @@ Em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/linux/sch
     #define CLONE_NEWNET         0x40000000  /* New network namespace */
     #define CLONE_IO             0x80000000  /* Clone io context */
 ```
-
-### Retorno da função
-
-Quando a função do  processo filho encerrar, este retornará o valor da função passada e será o código de saída para o processo filho (a thread do processo filho também pode ser terminada explicitamente chamando *exit(2)* ou recebendo um sinal). 
-
-Além disso, segundo o manual, o byte menos significativo contém o número do *termination signal*, que é enviado quando o processo filho termina. Se nenhum sinal é especificado diferentemente de *SIGCHLD*, então o processo pai deve especificar a opção *__WALL* ou *__WCLONE* quando espera pelo filho com wait(2).
 
 ## _do_fork()
 
