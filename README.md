@@ -20,7 +20,7 @@ O modelo de processo é baseado em dois conceitos independentes: agrupamento de 
 
 # Representação de um Processo ou Thread
 
-No sistema operacional Linux, tanto processos quanto ''threads'' são tratados como sendo uma '''''task'''''. Uma ''task'' é representada por uma estrutura um tanto grande chamada ''task_struct''. Esta estrutura contém os dados necessários para representar a ''task'' e algumas de suas relações com outras ''tasks'' [3].
+No sistema operacional Linux, tanto processos quanto ''threads'' são tratados como sendo uma **task**. Uma ''task'' é representada por uma estrutura um tanto grande chamada ''task_struct''. Esta estrutura contém os dados necessários para representar a ''task'' e algumas de suas relações com outras ''tasks'' [3].
 
 ## task_struct
 
@@ -233,7 +233,7 @@ A ''thread_struct'' depende da arquitetura sendo utilizada, sendo que para a x86
 
 ### thread_info
 
-É interessante observar, conforme descrito por Love [4], que a ''task_struct'' é alocada pelo ''slab allocator'' para prover reuso de objetos e ''cache coloring''. Antes da versão 2.6 do ''kernel'', a ''task_struct'' era alocada no fim da pilha do ''kernel'' para cada processo. Isso permitia que arquiteturas com poucos registradores, como a x86, pudessem calcular a posição do descritor de processo pelo ponteiro da pilha sem usar um registrador a mais para armazenar tal posição. Hoje o descritor de processos é dinamicamente criado pelo ''slab allocator'', então a ''struct'' '''''thread_info''''' foi criada para apontar para a ''task_struct''. Agora, a ''thread_info'', que é relativamente pequena, se encontra no fim da pilha.
+É interessante observar, conforme descrito por Love [4], que a ''task_struct'' é alocada pelo ''slab allocator'' para prover reuso de objetos e ''cache coloring''. Antes da versão 2.6 do ''kernel'', a ''task_struct'' era alocada no fim da pilha do ''kernel'' para cada processo. Isso permitia que arquiteturas com poucos registradores, como a x86, pudessem calcular a posição do descritor de processo pelo ponteiro da pilha sem usar um registrador a mais para armazenar tal posição. Hoje o descritor de processos é dinamicamente criado pelo ''slab allocator'', então a ''struct'' **thread_info** foi criada para apontar para a ''task_struct''. Agora, a ''thread_info'', que é relativamente pequena, se encontra no fim da pilha.
 
 A seguir é apresentado a [http://elixir.free-electrons.com/linux/v4.11.7/source/arch/ia64/include/asm/thread_info.h#L21 código] da ''thread_info'':
 
@@ -443,11 +443,11 @@ Basicamente, a chamada de sistema ''clone()'' chama a ''_do_fork()'' passando ma
 
 A função ''clone()'' da glibc possui os seguintes argumentos:
 
-* '''fn''': quando o processo é criado por ''clone()'', este executa a função ''fn(arg)''. ''fn'' é um ponteiro para uma função que é invocada pelo processo filho no início da sua execução. Os argumentos para esta função são passados através do parâmetro ''arg''.
+* **fn**: quando o processo é criado por ''clone()'', este executa a função ''fn(arg)''. ''fn'' é um ponteiro para uma função que é invocada pelo processo filho no início da sua execução. Os argumentos para esta função são passados através do parâmetro ''arg''.
 
-* '''child_stack''': especifica o endereço da pilha utilizada pelo processo filho. O processo pai deve alocar um espaço de memória para a pilha do filho e passar o ponteiro deste espaço para o ''clone()''.
+* **child_stack**: especifica o endereço da pilha utilizada pelo processo filho. O processo pai deve alocar um espaço de memória para a pilha do filho e passar o ponteiro deste espaço para o ''clone()''.
 
-* '''flags''': constantes que indicam o que será compartilhado entre o processo pai e o processo filho, como, por exemplo, os vetores de arquivos abertos, as páginas da memória virtual, ''signal handlers'', entre outros. Pode-se conferir as ''flags'' na seção abaixo.
+* **flags**: constantes que indicam o que será compartilhado entre o processo pai e o processo filho, como, por exemplo, os vetores de arquivos abertos, as páginas da memória virtual, ''signal handlers'', entre outros. Pode-se conferir as ''flags'' na seção abaixo.
 
 ## Clone flags
 
@@ -585,21 +585,21 @@ Seu código é apresentado abaixo
 
 A função ''_do_fork()'' recebe os seguintes parâmetros:
 
-* '''clone_flags''': ''Flags'' que especificam quais áreas da memória devem ser copiadas para o filho e outras informações, como qual sinal deve ser enviado ao processo pai quando o filho terminar (no caso do ''fork()'', por exemplo, é o sinal ''SIGCHLD'');
+* **clone_flags**: ''Flags'' que especificam quais áreas da memória devem ser copiadas para o filho e outras informações, como qual sinal deve ser enviado ao processo pai quando o filho terminar (no caso do ''fork()'', por exemplo, é o sinal ''SIGCHLD'');
 
-* '''stack_start''': Ponteiro da pilha a ser atribuído ao registrador esp do processo filho;
+* **stack_start**: Ponteiro da pilha a ser atribuído ao registrador esp do processo filho;
 
-* '''stack_size''': Utilizado apenas no ''copy_thread_tls()'', ver discussão em [5], onde se debate que este parâmetro é utilizado somente ao fazer um ''fork'' de ''kernel thread'' para passar argumentos, e nunca como uma ''stack size''. Sugere-se então para mudar o nome para ''kthread_arg'';
+* **stack_size**: Utilizado apenas no ''copy_thread_tls()'', ver discussão em [5], onde se debate que este parâmetro é utilizado somente ao fazer um ''fork'' de ''kernel thread'' para passar argumentos, e nunca como uma ''stack size''. Sugere-se então para mudar o nome para ''kthread_arg'';
 
-* '''*parent_tidptr''': Especifica o endereço de uma variável do processo pai para guardar o PID da nova thread (ver a ''flag'' CLONE_PARENT_SETID);
+* ***parent_tidptr**: Especifica o endereço de uma variável do processo pai para guardar o PID da nova thread (ver a ''flag'' CLONE_PARENT_SETID);
 
-* '''*child_tidptr''': Especifica o endereço de uma variável da nova thread para guardar seu PID (ver a ''flag'' CLONE_CHILD_SETTID);
+* ***child_tidptr**: Especifica o endereço de uma variável da nova thread para guardar seu PID (ver a ''flag'' CLONE_CHILD_SETTID);
 
-* '''tls''': É o endereço de uma ''Thread Local Storage'' (TLS) para a nova ''thread'' (ver ''flag'' ''CLONE_SETTLS'').
+* **tls**: É o endereço de uma ''Thread Local Storage'' (TLS) para a nova ''thread'' (ver ''flag'' ''CLONE_SETTLS'').
 
 ### Retorno da função
 
-Como já se sabe, a função ''fork()'' retorna o PID do processo filho para o pai e o valor 0 para o filho. Ao observar o código acima, nota-se que a variável '''''nr''''' é utilizada como retorno da função ''_do_fork()''.
+Como já se sabe, a função ''fork()'' retorna o PID do processo filho para o pai e o valor 0 para o filho. Ao observar o código acima, nota-se que a variável **nr** é utilizada como retorno da função ''_do_fork()''.
 
 Na linha 
 
@@ -736,7 +736,7 @@ A variável ''childregs'' é do tipo ''struct *pt_regs'' e representa os valores
     };
 ```
 
-e na linha destacada abaixo, da função <code>copy_thread_tls()</code>, seta o valor do registrador '''ax''' como 0.
+e na linha destacada abaixo, da função <code>copy_thread_tls()</code>, seta o valor do registrador **ax** como 0.
 
 ```C
     childregs->ax = 0;
@@ -943,11 +943,11 @@ A função ''copy_process()'' recebe os seguintes parâmetros:
 
 clone_flags, stack_start, stack_size, child_tidptr e tls, que já foram explicadas na seção de parâmetros da função ''do_fork()'', além de
 
-* '''pid''': PID que pode ser previamente alocado e passado. Também pode ser passado o valor ''NULL'' para que este seja alocado dentro da função ''copy_process()''.
+* **pid**: PID que pode ser previamente alocado e passado. Também pode ser passado o valor ''NULL'' para que este seja alocado dentro da função ''copy_process()''.
 
-* '''trace''': Flags que determinam qual evento reportar ao ''ptracer'' (e se o evento deve ser reportado).
+* **trace**: Flags que determinam qual evento reportar ao ''ptracer'' (e se o evento deve ser reportado).
 
-* '''node''': Node no qual está (ou deve ser) alocada a ''task''.
+* **node**: Node no qual está (ou deve ser) alocada a ''task''.
 
 A função ''_do_fork()'', como mostrado anteriormente, chama a função ''copy_process()'' com os parâmetros ''*pid'' = ''NULL'' e ''node'' = ''NUMA_NO_NODE'', enquanto que os outros parâmetros são os mesmos parâmetros passados ao próprio ''_do_fork()''. Já a função ''fork_idle()'' chama a função ''copy_process()'' com os parâmetros a seguir:
 
@@ -962,7 +962,7 @@ A função ''_do_fork()'', como mostrado anteriormente, chama a função ''copy_
  
 ### Retorno da função
 
-A função ''copy_process()'' retorna um ponteiro para a ''task struct'' da ''task'' criada (a variável '''''p'''''), se não houver nenhum erro em sua execução. Caso contrário, a função retorna um ponteiro para erros ''ERR_PTR'', que basicamente indica o número do erro que ocorreu, referenciado pela variável '''''retval'''''.
+A função ''copy_process()'' retorna um ponteiro para a ''task struct'' da ''task'' criada (a variável **p**), se não houver nenhum erro em sua execução. Caso contrário, a função retorna um ponteiro para erros ''ERR_PTR'', que basicamente indica o número do erro que ocorreu, referenciado pela variável **retval**.
 
 Um ponto importante ao se notar na implementação do ''fork'', como descrito por Love [4], é que se o retorno do ''copy_process()'' for sucedido, o ''kernel'' executa (pelo menos na teoria), a ''task'' filha primeiro. Isso é planejado para que, se a ''tasḱ'' filha chama a função ''exec()'' imediatamente após o ''fork()'', se elimina qualquer ''overhead'' de ''copy-on-write'' que poderia ocorrer caso a ''task'' pai execute primeiro e escreva no espaço de endereçamento.
 
