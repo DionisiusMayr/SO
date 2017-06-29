@@ -26,6 +26,7 @@ No sistema operacional Linux, tanto processos quanto ''threads'' são tratados c
 
 O código a seguir apresenta a [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L483 task_struct] de maneira resumida:
 
+```C
     struct task_struct {
     #ifdef CONFIG_THREAD_INFO_IN_TASK
         /*
@@ -155,6 +156,7 @@ O código a seguir apresenta a [http://elixir.free-electrons.com/linux/v4.11.7/s
          * Do not put anything below here!
          */
     };
+```
 
 Grande parte dos campos da ''task_struct'' já eram esperados, como uma ''stack'', estado de execução, páginas da memória mapeadas, PID, vetor de arquivos abertos, informações do sistema de arquivos, política de escalonamento entre outras coisas.
 
