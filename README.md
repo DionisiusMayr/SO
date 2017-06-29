@@ -1,4 +1,4 @@
-#Seminário de SO2 - Representação e criação de processos e ''threads'' - 2017/1
+# Seminário de SO2 - Representação e criação de processos e ''threads'' - 2017/1
 
 Este estudo explora a criação e a representação de processos e ''threads'' no sistema operacional Linux. Inicialmente serão apresentadas algumas definições primordiais e, posteriormente, serão analisados os códigos responsáveis pela criação de processos e também as estruturas de dados envolvidas na representação.
 
