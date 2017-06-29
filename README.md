@@ -1438,7 +1438,7 @@ Nesse procedimento também é determinado o tamanho máximo de *threads* do sist
     }
 ```
 
-A desalocação de espaço da task_struct é feita [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L156 em] free_task_struct()<\code>
+A desalocação de espaço da task_struct é feita [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L156 em] free_task_struct()
 
 ```C
     static inline void free_task_struct(struct task_struct *tsk)
