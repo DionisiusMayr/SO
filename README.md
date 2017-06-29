@@ -748,7 +748,7 @@ Por convenção, sabe-se que o retorno das funções é passado pelo registrador
 
 A função [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/sched/core.c wake_up_new_task()] é responsável por colocar a *task* recém criada na *runqueue* pela primeira vez.
 
-Ela seta seta o estado da *task* para TASK_RUNNING e chama o *__set_task_cpu()*, que por sua vez chama o *select_task_rq()*.
+Ela seta o estado da *task* para TASK_RUNNING e chama o *__set_task_cpu()*, que por sua vez chama o *select_task_rq()*.
 
 ```C
 	/*
@@ -1349,7 +1349,7 @@ Esse procedimento é chamado pela main do *kernel* para inicializar onde serão 
 
 Veremos como o *kernel* armazena e manipula as *task_struct*. Primeiramente, observa-se o [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L441 código]:
 
-```
+```C
     void __init fork_init(void)
     {
         ...
@@ -1368,7 +1368,25 @@ Veremos como o *kernel* armazena e manipula as *task_struct*. Primeiramente, obs
     }
 ```
 
-*task_struct_cachep* é um ponteiro para a posição de memória que armazena onde ficarão todas as *task_struct*. No fork_init(), esse ponteiro é inicializado e ele é utilizado em todas as criações de processo, pois é utilizado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L151 código] de alloc_task_struct_node():
+### task_struct_cachep
+
+Esse ponteiro contém onde está armazenado todas as task_struct.
+
+A inicialização dele é feita em fork_init()
+
+```C
+    void __init fork_init(void)
+    {
+        ...
+        /* create a slab on which task_structs can be allocated */
+        task_struct_cachep = kmem_cache_create("task_struct",
+                arch_task_struct_size, align,
+                SLAB_PANIC|SLAB_NOTRACK|SLAB_ACCOUNT, NULL);
+        ...
+    }
+```
+
+* É utilizado em todas as alocações de task_struct, pois é utilizado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L151 código] de alloc_task_struct_node():
 
 ```C
     static inline struct task_struct *alloc_task_struct_node(int node)
@@ -1419,6 +1437,49 @@ Nesse procedimento também é determinado o tamanho máximo de *threads* do sist
         ...
     }
 ```
+
+A desalocação de espaço da task_struct é feita [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L156 em] free_task_struct()<\code>
+
+```C
+    static inline void free_task_struct(struct task_struct *tsk)
+    {
+        kmem_cache_free(task_struct_cachep, tsk);
+    }
+```
+
+que é usado [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L349 em] free_task()
+
+```C
+    void free_task(struct task_struct *tsk)
+    {
+        ...
+        free_task_struct(tsk);
+    }
+```
+
+que é usado [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L393 em] __put_task_struct()
+
+```C
+    void __put_task_struct(struct task_struct *tsk)
+    {
+        ...
+            free_task(tsk);
+    }
+```
+
+que é usado [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched/task.h#L91 em] put_task_struct()
+
+```C
+    static inline void put_task_struct(struct task_struct *t)
+    {
+        if (atomic_dec_and_test(&t->usage))
+            __put_task_struct(t);
+    }
+```
+
+que é o procedimento que o kernel utiliza para desalocar *task_struct*, usado em vários lugares do kernel.
+
+### Max Threads
 
 O [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L416 código] de set_max_threads():
 
