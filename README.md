@@ -193,7 +193,7 @@ O espaço de endereçamento do processo é representado pelos campos *mm* e *act
 
 Os campos *children* e *sibling* são utilizados na lista duplamente encadeada, apresentados novamente no *copy_process()*.
 
-[[Imagem:Task_struct_lista.png]]
+![alt text](./bloco.png)
 
 A *thread_struct* depende da arquitetura sendo utilizada, sendo que para a x86_64 é possível ver seu código em [http://elixir.free-electrons.com/linux/v4.11.7/source/arch/x86/include/asm/processor.h#L422 linux/arch/x86/include/asm/processor.h#L422], com um fragmento apresentado abaixo:
 
