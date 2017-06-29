@@ -1040,7 +1040,7 @@ Em termos gerais, conforme descrito por Love [4], a função *copy_process()* ex
 
 * A partir deste momento, a *task* filha se diferencia da *task* pai. Vários membros do descritor de processo recebem o valor 0 ou seus valores iniciais. Exemplos de tais membros são as *flags* *PF_SUPERPRIV*, *PF_WQ_WORKER* e *PF_IDLE*, que são "resetadas" e *PF_FORKNOEXEC*, que é ativada (cujos significados se encontram na seção *PF Flags*), os *times* (*utime*, *stime*, *gtime*, *start_time*, *real_start_time*, etc.), as políticas de gerenciamento de memória, variáveis de *interrupt requests*, entre outros.
 
-É nesta etapa que também começa a seta os valores dos campos *children* e *sibling*, da lista duplamente encadeada.
+É nesta etapa que também começa a setar os valores dos campos *children* e *sibling*, da lista duplamente encadeada.
 
 ```C
         delayacct_tsk_init(p);  /* Must remain after dup_task_struct() */
