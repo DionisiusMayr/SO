@@ -295,7 +295,7 @@ O fragmento de código a seguir apresenta onde a *task_struct* armazena o [http:
     ...
 ```
 
-Para o kernel, [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L617 tgid] é o que para o usuário é o PID, como pode ser visto no [http://man7.org/linux/man-pages/man2/clone.2.html manual do clone] <nowiki>:</nowiki>
+Para o kernel, [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L617 tgid] é o que para o usuário é o PID, como pode ser visto no [http://man7.org/linux/man-pages/man2/clone.2.html manual do clone] 
 
     Thread groups were a feature added in Linux 2.4 to support the
     POSIX threads notion of a set of threads that share a single
@@ -303,7 +303,7 @@ Para o kernel, [http://elixir.free-electrons.com/linux/v4.11.7/source/include/li
     group identifier (TGID) for the thread group.  Since Linux
     2.4, calls to getpid(2) return the TGID of the caller.
 
-E [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L616 pid] é um identificador único para cada *task_struct*, cada pid identifica uma linha de execução, ou thread, diferente. Como pode ser deduzido do <span class="plainlinks">[http://man7.org/linux/man-pages/man2/clone.2.html manual do clone]</span>
+E [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L616 pid] é um identificador único para cada *task_struct*, cada pid identifica uma linha de execução, ou thread, diferente. Como pode ser deduzido do [http://man7.org/linux/man-pages/man2/clone.2.html manual do clone]
 
     The threads within a group can be distinguished by their
     (system-wide) unique thread IDs (TID).  A new thread's TID is
@@ -315,7 +315,7 @@ E [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L
     thread group whose TGID is the same as the thread's TID.  This
     thread is the leader of the new thread group.
 
-juntamente com o <span class="plainlinks">[http://man7.org/linux/man-pages/man2/gettid.2.html manual do gettid]</span>
+juntamente com o [http://man7.org/linux/man-pages/man2/gettid.2.html manual do gettid]
 
     gettid() returns the caller's thread ID (TID).  In a single-threaded
     process, the thread ID is equal to the process ID (PID, as returned
@@ -736,13 +736,13 @@ A variável *childregs* é do tipo *struct *pt_regs* e representa os valores dos
     };
 ```
 
-e na linha destacada abaixo, da função <code>copy_thread_tls()</code>, seta o valor do registrador **ax** como 0.
+e na linha destacada abaixo, da função copy_thread_tls(), seta o valor do registrador **ax** como 0.
 
 ```C
     childregs->ax = 0;
 ```
 
-Por convenção, sabe-se que o retorno das funções é passado pelo registrador ax. Portanto, esta é a forma pela qual a chamada <code>fork()</code> é capaz de retornar adequadamente os valores desejados para tanto o processo filho quanto para o processo pai.
+Por convenção, sabe-se que o retorno das funções é passado pelo registrador ax. Portanto, esta é a forma pela qual a chamada fork() é capaz de retornar adequadamente os valores desejados para tanto o processo filho quanto para o processo pai.
 
 ### wake_up_new_task()
 
@@ -887,13 +887,13 @@ ou seja, uma thread.
 ```
 
 *p* é a nova [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L483 task_struct]
-e *current* é a <span class="plainlinks">[http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L483 task_struct]</span> do chamador.
+e *current* é a [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L483 task_struct] do chamador.
 
-Quando passado a *flag* <span class="plainlinks">[http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/linux/sched.h#L15 CLONE_THREAD]</span>,
-o <span class="plainlinks">[http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L617 tgid]</span> do pai é passado para o filho.
+Quando passado a *flag* [http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/linux/sched.h#L15 CLONE_THREAD],
+o [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L617 tgid] do pai é passado para o filho.
 Ou seja, na visão do usuário, os dois processos tem o mesmo PID.
 
-As *threads* também precisam ter o mesmo tratamento de sinais e compartilhar memória. Isso é especificado no <span class="plainlinks">[http://man7.org/linux/man-pages/man2/clone.2.html manual do clone]</span><nowiki>:</nowiki>
+As *threads* também precisam ter o mesmo tratamento de sinais e compartilhar memória. Isso é especificado no [http://man7.org/linux/man-pages/man2/clone.2.html manual do clone]
 
     Since Linux 2.5.35, flags must also include CLONE_SIGHAND if
     CLONE_THREAD is specified (and note that, since Linux
@@ -1368,7 +1368,7 @@ Veremos como o *kernel* armazena e manipula as *task_struct*. Primeiramente, obs
     }
 ```
 
-*task_struct_cachep* é um ponteiro para a posição de memória que armazena onde ficarão todas as *task_struct*. No <code>fork_init()</code>, esse ponteiro é inicializado e ele é utilizado em todas as criações de processo, pois é utilizado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L151 código] de <code>alloc_task_struct_node()</code>:
+*task_struct_cachep* é um ponteiro para a posição de memória que armazena onde ficarão todas as *task_struct*. No fork_init(), esse ponteiro é inicializado e ele é utilizado em todas as criações de processo, pois é utilizado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L151 código] de alloc_task_struct_node():
 
 ```C
     static inline struct task_struct *alloc_task_struct_node(int node)
@@ -1377,7 +1377,7 @@ Veremos como o *kernel* armazena e manipula as *task_struct*. Primeiramente, obs
     }
 ```
 
-que é usado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L495 código] de <code>dup_task_struct()</code>:
+que é usado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L495 código] de dup_task_struct():
 
 ```C
     static struct task_struct *dup_task_struct(struct task_struct *orig, int node)
@@ -1388,7 +1388,7 @@ que é usado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fo
     }
 ```
 
-que é usado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L1551 código] de <code>copy_process()</code>:
+que é usado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L1551 código] de copy_process():
 
 ```C
     static __latent_entropy struct task_struct *copy_process(
@@ -1420,7 +1420,7 @@ Nesse procedimento também é determinado o tamanho máximo de *threads* do sist
     }
 ```
 
-O [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L416 código] de <code>set_max_threads()</code>:
+O [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L416 código] de set_max_threads():
 
 ```C
     static void set_max_threads(unsigned int max_threads_suggested)
@@ -1444,7 +1444,7 @@ O [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L416 cód
     }
 ```
 
-determina o valor de *max_threads*, que é utilizado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L1593 código] de <code>copy_process()</code>:
+determina o valor de *max_threads*, que é utilizado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L1593 código] de copy_process():
 
 ```C
     static __latent_entropy struct task_struct *copy_process(
