@@ -1,4 +1,4 @@
-'''Seminário de SO2 - Representação e criação de processos e ''threads'' - 2017/1'''
+#Seminário de SO2 - Representação e criação de processos e ''threads'' - 2017/1
 
 Este estudo explora a criação e a representação de processos e ''threads'' no sistema operacional Linux. Inicialmente serão apresentadas algumas definições primordiais e, posteriormente, serão analisados os códigos responsáveis pela criação de processos e também as estruturas de dados envolvidas na representação.
 
@@ -10,7 +10,7 @@ De acordo com Tanenbaum [1], um processo é uma abstração de um programa em ex
 
 Em geral, ocorre a execução simultânea de vários processos de maneira que os mesmos concorram pela utilização de recursos oferecidos, denotando assim um ambiente de multiprocessos.
 
-=Thread=
+#Thread
 
 O modelo de processo é baseado em dois conceitos independentes: agrupamento de recursos e execução. ''Threads'' realizam a separação destes conceitos. A fim de compreendê-las, é importante denotar que um processo é um meio de agrupar recursos como a área de código, dados do programa, vetores de arquivos abertos, informações de recursos utilizados, entre outros; facilitando assim o seu gerenciamento [1].
 
@@ -18,11 +18,11 @@ O modelo de processo é baseado em dois conceitos independentes: agrupamento de 
 
 É importante notar que cada processo possui ao menos uma ''thread'' associada a si, podendo criar outras ''threads'' de maneira dinâmica para auxiliar na execução do programa.
 
-=Representação de um Processo ou Thread=
+#Representação de um Processo ou Thread
 
 No sistema operacional Linux, tanto processos quanto ''threads'' são tratados como sendo uma '''''task'''''. Uma ''task'' é representada por uma estrutura um tanto grande chamada ''task_struct''. Esta estrutura contém os dados necessários para representar a ''task'' e algumas de suas relações com outras ''tasks'' [3].
 
-==task_struct==
+##task_struct
 
 O código a seguir apresenta a [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L483 task_struct] de maneira resumida:
 
@@ -225,7 +225,7 @@ A ''thread_struct'' depende da arquitetura sendo utilizada, sendo que para a x86
         /* WARNING: 'fpu' is dynamically-sized.  It *MUST* be at the end. */
     };
 
-===thread_info===
+###thread_info
 
 É interessante observar, conforme descrito por Love [4], que a ''task_struct'' é alocada pelo ''slab allocator'' para prover reuso de objetos e ''cache coloring''. Antes da versão 2.6 do ''kernel'', a ''task_struct'' era alocada no fim da pilha do ''kernel'' para cada processo. Isso permitia que arquiteturas com poucos registradores, como a x86, pudessem calcular a posição do descritor de processo pelo ponteiro da pilha sem usar um registrador a mais para armazenar tal posição. Hoje o descritor de processos é dinamicamente criado pelo ''slab allocator'', então a ''struct'' '''''thread_info''''' foi criada para apontar para a ''task_struct''. Agora, a ''thread_info'', que é relativamente pequena, se encontra no fim da pilha.
 
@@ -258,7 +258,7 @@ A seguir é apresentado a [http://elixir.free-electrons.com/linux/v4.11.7/source
     #endif
     };
 
-===PID===
+###PID
 
 Cada processo é identificado unicamente por um ''process ID'', chamado comumente de PID. PIDs são inteiros atribuídos sequencialmente pelo Sistema Operacional (SO) quando um novo processo é criado [2].
 
@@ -309,11 +309,11 @@ juntamente com o <span class="plainlinks">[http://man7.org/linux/man-pages/man2/
     PID, but each one has a unique TID.  For further details, see the
     discussion of CLONE_THREAD in clone(2).
 
-=Criação de Processos e Threads=
+#Criação de Processos e Threads
 
 O código central em nossa análise é o [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L1967 linux/kernel/fork.c] (de agora em diante chamado de 'fork.c', que contém sobretudo as funcionalidades necessárias para efetuar a chamada ''fork()'', responsável por criar um novo processo, e chamadas similares.
 
-==fork()==
+##fork()
 
 Segundo o manual do Linux, o comando fork() cria um novo processo duplicando o processo que realiza a chamada (chamado aqui de processo pai). O processo criado (chamado de processo filho) é uma cópia praticamente exata do processo pai, exceto que o processo filho não herda, essencialmente:
 
@@ -348,7 +348,7 @@ A função ''_do_fork()'' é explicada de forma mais detalhada posteriormente. O
 
 e é utilizado para especificar qual é o sinal de retorno a ser enviado para o processo pai quando o filho termina.
 
-==vfork()==
+##vfork()
 
 Assim como a chamada de sistema ''fork()'', esta chamada também é utilizada para criar um processo filho. A principal diferença entre tais chamadas é que ''vfork()'' não copia as tabelas de página do processo pai, sendo utilizada para obter maior desempenho em casos em que uma chamada ''execve()'' é realizada logo após a criação do processo.
 
@@ -365,7 +365,7 @@ Ela é definida em [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel
 
 A ''flag'' ''CLONE_VFORK'' indica que o processo pai quer que o filho acorde com o ''mm_release'', utilizada para indicar que é a chamada ''vfork()'' e a ''flag'' ''CLONE_VM'' diz que a memória virtual é compartilhada entre os dois processos.
 
-==clone()==
+##clone()
 
 A função [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L2084 clone()] é uma interface da glibc para múltiplas chamadas de sistema, o qual realiza a criação de ''task''.
 
@@ -412,7 +412,7 @@ A syscall do clone é definida em [http://elixir.free-electrons.com/linux/v4.11.
 
 Basicamente, a chamada de sistema ''clone()'' chama a ''_do_fork()'' passando mais argumentos do que as chamadas ''fork()'' ou ''vfork()''. Devido às ''flags'' passadas, ''clone()'' provê maior flexibilidade dentre estas 3 funções, tendo controle sobre o compartilhamento de recursos entre o processo pai e filho.
 
-===Parâmetros===
+###Parâmetros
 
 A função ''clone()'' da glibc possui os seguintes argumentos:
 
@@ -422,7 +422,7 @@ A função ''clone()'' da glibc possui os seguintes argumentos:
 
 * '''flags''': constantes que indicam o que será compartilhado entre o processo pai e o processo filho, como, por exemplo, os vetores de arquivos abertos, as páginas da memória virtual, ''signal handlers'', entre outros. Pode-se conferir as ''flags'' na seção abaixo.
 
-==Clone flags==
+##Clone flags
 
 Em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/linux/sched.h linux/include/uapi/linux/sched.h] estão definidas as políticas de escalonamento e as ''cloning flags'', apresentadas abaixo:
 
@@ -451,13 +451,13 @@ Em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/linux/sch
     #define CLONE_NEWNET         0x40000000  /* New network namespace */
     #define CLONE_IO             0x80000000  /* Clone io context */
 
-===Retorno da função===
+###Retorno da função
 
 Quando a função do  processo filho encerrar, este retornará o valor da função passada e será o código de saída para o processo filho (a thread do processo filho também pode ser terminada explicitamente chamando ''exit(2)'' ou recebendo um sinal). 
 
 Além disso, segundo o manual, o byte menos significativo contém o número do ''termination signal'', que é enviado quando o processo filho termina. Se nenhum sinal é especificado diferentemente de ''SIGCHLD'', então o processo pai deve especificar a opção ''__WALL'' ou ''__WCLONE'' quando espera pelo filho com wait(2).
 
-==_do_fork()==
+##_do_fork()
 
 A função ''_do_fork()'' é responsável por realizar de fato o que se espera da criação de uma nova ''task''.
 
@@ -541,7 +541,7 @@ Seu código é apresentado abaixo
         return nr;
     }
 
-===Parâmetros===
+###Parâmetros
 
     long _do_fork(unsigned long clone_flags,
                   unsigned long stack_start,
@@ -564,7 +564,7 @@ A função ''_do_fork()'' recebe os seguintes parâmetros:
 
 * '''tls''': É o endereço de uma ''Thread Local Storage'' (TLS) para a nova ''thread'' (ver ''flag'' ''CLONE_SETTLS'').
 
-===Retorno da função===
+###Retorno da função
 
 Como já se sabe, a função ''fork()'' retorna o PID do processo filho para o pai e o valor 0 para o filho. Ao observar o código acima, nota-se que a variável '''''nr''''' é utilizada como retorno da função ''_do_fork()''.
 
@@ -701,7 +701,7 @@ e na linha destacada abaixo, da função <code>copy_thread_tls()</code>, seta o 
 
 Por convenção, sabe-se que o retorno das funções é passado pelo registrador ax. Portanto, esta é a forma pela qual a chamada <code>fork()</code> é capaz de retornar adequadamente os valores desejados para tanto o processo filho quanto para o processo pai.
 
-===wake_up_new_task()===
+###wake_up_new_task()
 
 A função [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/sched/core.c wake_up_new_task()] é responsável por colocar a ''task'' recém criada na ''runqueue'' pela primeira vez.
 
@@ -754,7 +754,7 @@ Ela seta seta o estado da ''task'' para TASK_RUNNING e chama o ''__set_task_cpu(
 		task_rq_unlock(rq, p, &rf);
 	}
 
-===select_task_rq()===
+###select_task_rq()
 
 A função [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/sched/core.c#L1553 select_task_rq()], apresentada abaixo, seleciona uma CPU disponível, baseando também no escalonador referente à política de escalonamento a ser utilizada para a ''task'' (e.g., ''fair''), levando em conta também a afinidade da ''task'' com as CPUs e o campo ''cpus_allowed'' da ''task_struct''.
 
@@ -789,7 +789,7 @@ A função [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/sched/c
 	}
 
 
-==do_fork()==
+##do_fork()
 
 Existe também uma função chamada ''do_fork()'', por motivos de compatibilidade com arquiteturas que chamam ''do_fork()'' diretamente:
 
@@ -809,7 +809,7 @@ Existe também uma função chamada ''do_fork()'', por motivos de compatibilidad
 
 Basicamente, ela chama ''_do_fork()'' com o parâmetro ''tls = 0''.
 
-==pthreads==
+##pthreads
 
 Para dar suporte para as threads POSIX, o linux fornece uma
 flag, [http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/linux/sched.h#L15 CLONE_THREAD],
@@ -867,13 +867,13 @@ E reforçado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fo
     if ((clone_flags & CLONE_SIGHAND) && !(clone_flags & CLONE_VM))
         return ERR_PTR(-EINVAL);
 
-==copy_process()==
+##copy_process()
 
 A função [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L1491 copy_process()] é responsável por realmente criar a nova ''task'' como cópia da antiga. Ela é chamada por duas funções, a ''_do_fork()'' e a ''fork_idle()''. 
 
 A função ''fork_idle()'' cria uma ''idle thread'' (''thread'' ociosa), usada para economizar energia quando não há trabalho a ser feito, até outra ''thread'' desejar ser reescalonada.
 
-===Parâmetros===
+###Parâmetros
 
     static __latent_entropy struct task_struct *copy_process(
                         unsigned long clone_flags,  // Flags do clone
@@ -904,13 +904,13 @@ A função ''_do_fork()'', como mostrado anteriormente, chama a função ''copy_
         ...
     }
 
-===Retorno da função===
+###Retorno da função
 
 A função ''copy_process()'' retorna um ponteiro para a ''task struct'' da ''task'' criada (a variável '''''p'''''), se não houver nenhum erro em sua execução. Caso contrário, a função retorna um ponteiro para erros ''ERR_PTR'', que basicamente indica o número do erro que ocorreu, referenciado pela variável '''''retval'''''.
 
 Um ponto importante ao se notar na implementação do ''fork'', como descrito por Love [4], é que se o retorno do ''copy_process()'' for sucedido, o ''kernel'' executa (pelo menos na teoria), a ''task'' filha primeiro. Isso é planejado para que, se a ''tasḱ'' filha chama a função ''exec()'' imediatamente após o ''fork()'', se elimina qualquer ''overhead'' de ''copy-on-write'' que poderia ocorrer caso a ''task'' pai execute primeiro e escreva no espaço de endereçamento.
 
-===Execução da função===
+###Execução da função
 
 Em termos gerais, conforme descrito por Love [4], a função ''copy_process()'' executa os seguintes passos:
 
@@ -1221,7 +1221,7 @@ Ou seja, a linha a seguir torna a nova ''task'' sendo alocada irmã outros filho
         return ERR_PTR(retval);
     }
 
-===PF Flags===
+###PF Flags
 
 Em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L1213 linux/include/linux/sched.h] estão definidas as possíveis ''flags'' de cada ''task'', apresentadas abaixo:
 
@@ -1257,7 +1257,7 @@ Em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#
     #define PF_FREEZER_SKIP     0x40000000  /* Freezer should not count it as freezable */
     #define PF_SUSPEND_TASK     0x80000000  /* This thread called freeze_processes() and should not be frozen */
 
-==fork_init==
+##fork_init
 
 Esse procedimento é chamado pela main do ''kernel'' para inicializar onde serão armazenados as ''task_struct''.
 
@@ -1367,7 +1367,7 @@ determina o valor de ''max_threads'', que é utilizado no [http://elixir.free-el
 
 que limita o número de threads que podem ser criadas.
 
-=Referências=
+#Referências
 
 [1] - Tanenbaum, Andrew. Modern operating systems. Pearson Education, Inc.,, 2009.
 
