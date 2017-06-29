@@ -1,8 +1,8 @@
-# Seminário de SO2 - Representação e criação de processos e ''threads'' - 2017/1
+# Seminário de SO2 - Representação e criação de processos e *threads* - 2017/1
 
-Este estudo explora a criação e a representação de processos e ''threads'' no sistema operacional Linux. Inicialmente serão apresentadas algumas definições primordiais e, posteriormente, serão analisados os códigos responsáveis pela criação de processos e também as estruturas de dados envolvidas na representação.
+Este estudo explora a criação e a representação de processos e *threads* no sistema operacional Linux. Inicialmente serão apresentadas algumas definições primordiais e, posteriormente, serão analisados os códigos responsáveis pela criação de processos e também as estruturas de dados envolvidas na representação.
 
-A versão do ''kernel'' utilizada foi a [http://elixir.free-electrons.com/linux/v4.11.7/source v4.11.7].
+A versão do *kernel* utilizada foi a [http://elixir.free-electrons.com/linux/v4.11.7/source v4.11.7].
 
 # Processo
 
@@ -12,15 +12,15 @@ Em geral, ocorre a execução simultânea de vários processos de maneira que os
 
 # Thread
 
-O modelo de processo é baseado em dois conceitos independentes: agrupamento de recursos e execução. ''Threads'' realizam a separação destes conceitos. A fim de compreendê-las, é importante denotar que um processo é um meio de agrupar recursos como a área de código, dados do programa, vetores de arquivos abertos, informações de recursos utilizados, entre outros; facilitando assim o seu gerenciamento [1].
+O modelo de processo é baseado em dois conceitos independentes: agrupamento de recursos e execução. *Threads* realizam a separação destes conceitos. A fim de compreendê-las, é importante denotar que um processo é um meio de agrupar recursos como a área de código, dados do programa, vetores de arquivos abertos, informações de recursos utilizados, entre outros; facilitando assim o seu gerenciamento [1].
 
-''Threads'' são linhas de execução de um processo escalonadas para executar. As ''threads'' possuem propriedades semelhantes ao processo, como contador de programa, variáveis de registradores atuais, a sua própria pilha, sendo portanto comumente chamadas de processos leves. Um processo pode conter diversas ''threads'' de execução, compartilhando entre si os recursos disponíveis, como as áreas de memória do processo indicadas pela tabela de páginas. Dessa forma é possível fazer com que haja cooperação entre as tarefas e, ao utilizar as ''threads'' de maneira adequada, melhorar o desempenho do processo [1].
+*Threads* são linhas de execução de um processo escalonadas para executar. As *threads* possuem propriedades semelhantes ao processo, como contador de programa, variáveis de registradores atuais, a sua própria pilha, sendo portanto comumente chamadas de processos leves. Um processo pode conter diversas *threads* de execução, compartilhando entre si os recursos disponíveis, como as áreas de memória do processo indicadas pela tabela de páginas. Dessa forma é possível fazer com que haja cooperação entre as tarefas e, ao utilizar as *threads* de maneira adequada, melhorar o desempenho do processo [1].
 
-É importante notar que cada processo possui ao menos uma ''thread'' associada a si, podendo criar outras ''threads'' de maneira dinâmica para auxiliar na execução do programa.
+É importante notar que cada processo possui ao menos uma *thread* associada a si, podendo criar outras *threads* de maneira dinâmica para auxiliar na execução do programa.
 
 # Representação de um Processo ou Thread
 
-No sistema operacional Linux, tanto processos quanto ''threads'' são tratados como sendo uma **task**. Uma ''task'' é representada por uma estrutura um tanto grande chamada ''task_struct''. Esta estrutura contém os dados necessários para representar a ''task'' e algumas de suas relações com outras ''tasks'' [3].
+No sistema operacional Linux, tanto processos quanto *threads* são tratados como sendo uma **task**. Uma *task* é representada por uma estrutura um tanto grande chamada *task_struct*. Esta estrutura contém os dados necessários para representar a *task* e algumas de suas relações com outras *tasks* [3].
 
 ## task_struct
 
@@ -158,9 +158,9 @@ O código a seguir apresenta a [http://elixir.free-electrons.com/linux/v4.11.7/s
     };
 ```
 
-Grande parte dos campos da ''task_struct'' já eram esperados, como uma ''stack'', estado de execução, páginas da memória mapeadas, PID, vetor de arquivos abertos, informações do sistema de arquivos, política de escalonamento entre outras coisas.
+Grande parte dos campos da *task_struct* já eram esperados, como uma *stack*, estado de execução, páginas da memória mapeadas, PID, vetor de arquivos abertos, informações do sistema de arquivos, política de escalonamento entre outras coisas.
 
-O código [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L68 linux/include/linux/sched.h#L68] define os estados de execução e de saída de uma ''task'':
+O código [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L68 linux/include/linux/sched.h#L68] define os estados de execução e de saída de uma *task*:
 
 ```C
     /* Used in tsk->state: */
@@ -185,17 +185,17 @@ O código [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/s
     #define TASK_STATE_MAX          4096
 ```
 
-O campo ''flags'' define diversas coisas, como se o processo está sendo criado (''PF_STARTING'') ou terminando (''PF_EXITING'') ou até mesmo se ele está alocando memória no momento (''PF_MEMALLOC'') [3].
+O campo *flags* define diversas coisas, como se o processo está sendo criado (*PF_STARTING*) ou terminando (*PF_EXITING*) ou até mesmo se ele está alocando memória no momento (*PF_MEMALLOC*) [3].
 
-O campo ''tasks'' provê a funcionalidade de lista duplamente encadeada, contendo um ponteiro para a ''task'' anterior (''prev'') e para a próxima ''task'' (''next'') [3].
+O campo *tasks* provê a funcionalidade de lista duplamente encadeada, contendo um ponteiro para a *task* anterior (*prev*) e para a próxima *task* (*next*) [3].
 
-O espaço de endereçamento do processo é representado pelos campos ''mm'' e ''active_mm''. O ''mm'' representa os descritores de memória do processo enquanto o ''active_mm'' são os descritores de memória do processo anterior. Isso é feito para melhorar a ''performance'' na troca de contextos [3].
+O espaço de endereçamento do processo é representado pelos campos *mm* e *active_mm*. O *mm* representa os descritores de memória do processo enquanto o *active_mm* são os descritores de memória do processo anterior. Isso é feito para melhorar a *performance* na troca de contextos [3].
 
-Os campos ''children'' e ''sibling'' são utilizados na lista duplamente encadeada, apresentados novamente no ''copy_process()''.
+Os campos *children* e *sibling* são utilizados na lista duplamente encadeada, apresentados novamente no *copy_process()*.
 
 [[Imagem:Task_struct_lista.png]]
 
-A ''thread_struct'' depende da arquitetura sendo utilizada, sendo que para a x86_64 é possível ver seu código em [http://elixir.free-electrons.com/linux/v4.11.7/source/arch/x86/include/asm/processor.h#L422 linux/arch/x86/include/asm/processor.h#L422], com um fragmento apresentado abaixo:
+A *thread_struct* depende da arquitetura sendo utilizada, sendo que para a x86_64 é possível ver seu código em [http://elixir.free-electrons.com/linux/v4.11.7/source/arch/x86/include/asm/processor.h#L422 linux/arch/x86/include/asm/processor.h#L422], com um fragmento apresentado abaixo:
 
 ```C
     struct thread_struct {
@@ -233,9 +233,9 @@ A ''thread_struct'' depende da arquitetura sendo utilizada, sendo que para a x86
 
 ### thread_info
 
-É interessante observar, conforme descrito por Love [4], que a ''task_struct'' é alocada pelo ''slab allocator'' para prover reuso de objetos e ''cache coloring''. Antes da versão 2.6 do ''kernel'', a ''task_struct'' era alocada no fim da pilha do ''kernel'' para cada processo. Isso permitia que arquiteturas com poucos registradores, como a x86, pudessem calcular a posição do descritor de processo pelo ponteiro da pilha sem usar um registrador a mais para armazenar tal posição. Hoje o descritor de processos é dinamicamente criado pelo ''slab allocator'', então a ''struct'' **thread_info** foi criada para apontar para a ''task_struct''. Agora, a ''thread_info'', que é relativamente pequena, se encontra no fim da pilha.
+É interessante observar, conforme descrito por Love [4], que a *task_struct* é alocada pelo *slab allocator* para prover reuso de objetos e *cache coloring*. Antes da versão 2.6 do *kernel*, a *task_struct* era alocada no fim da pilha do *kernel* para cada processo. Isso permitia que arquiteturas com poucos registradores, como a x86, pudessem calcular a posição do descritor de processo pelo ponteiro da pilha sem usar um registrador a mais para armazenar tal posição. Hoje o descritor de processos é dinamicamente criado pelo *slab allocator*, então a *struct* **thread_info** foi criada para apontar para a *task_struct*. Agora, a *thread_info*, que é relativamente pequena, se encontra no fim da pilha.
 
-A seguir é apresentado a [http://elixir.free-electrons.com/linux/v4.11.7/source/arch/ia64/include/asm/thread_info.h#L21 código] da ''thread_info'':
+A seguir é apresentado a [http://elixir.free-electrons.com/linux/v4.11.7/source/arch/ia64/include/asm/thread_info.h#L21 código] da *thread_info*:
 
 ```C
     /*
@@ -268,17 +268,17 @@ A seguir é apresentado a [http://elixir.free-electrons.com/linux/v4.11.7/source
 
 ### PID
 
-Cada processo é identificado unicamente por um ''process ID'', chamado comumente de PID. PIDs são inteiros atribuídos sequencialmente pelo Sistema Operacional (SO) quando um novo processo é criado [2].
+Cada processo é identificado unicamente por um *process ID*, chamado comumente de PID. PIDs são inteiros atribuídos sequencialmente pelo Sistema Operacional (SO) quando um novo processo é criado [2].
 
-Como os processos no SO Linux são criados a partir de um processo já existente (à exceção do processo ''init''), a cada processo está associado, além do PID, um  ''parent PID'' (PPID).
+Como os processos no SO Linux são criados a partir de um processo já existente (à exceção do processo *init*), a cada processo está associado, além do PID, um  *parent PID* (PPID).
 
-Existe um tipo próprio para representar PIDs, chamado ''pid_t'', apontado a seguir (definido em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/types.h#L21 linux/include/linux/types.h#L21]:
+Existe um tipo próprio para representar PIDs, chamado *pid_t*, apontado a seguir (definido em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/types.h#L21 linux/include/linux/types.h#L21]:
 
 ```C
     typedef __kernel_pid_t      pid_t;
 ```
 
-Onde ''__kernel_pid_t'', por sua vez, é estabelecido como um ''int'' em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/asm-generic/posix_types.h#L27 linux/include/uapi/asm-generic/posix_types.h#L27]:
+Onde *__kernel_pid_t*, por sua vez, é estabelecido como um *int* em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/asm-generic/posix_types.h#L27 linux/include/uapi/asm-generic/posix_types.h#L27]:
 
 ```C
     #ifndef __kernel_pid_t
@@ -286,7 +286,7 @@ Onde ''__kernel_pid_t'', por sua vez, é estabelecido como um ''int'' em [http:/
     #endif
 ```
 
-O fragmento de código a seguir apresenta onde a ''task_struct'' armazena o [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L616 pid] e o tgid
+O fragmento de código a seguir apresenta onde a *task_struct* armazena o [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L616 pid] e o tgid
 
 ```C
     ...
@@ -303,7 +303,7 @@ Para o kernel, [http://elixir.free-electrons.com/linux/v4.11.7/source/include/li
     group identifier (TGID) for the thread group.  Since Linux
     2.4, calls to getpid(2) return the TGID of the caller.
 
-E [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L616 pid] é um identificador único para cada ''task_struct'', cada pid identifica uma linha de execução, ou thread, diferente. Como pode ser deduzido do <span class="plainlinks">[http://man7.org/linux/man-pages/man2/clone.2.html manual do clone]</span>
+E [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L616 pid] é um identificador único para cada *task_struct*, cada pid identifica uma linha de execução, ou thread, diferente. Como pode ser deduzido do <span class="plainlinks">[http://man7.org/linux/man-pages/man2/clone.2.html manual do clone]</span>
 
     The threads within a group can be distinguished by their
     (system-wide) unique thread IDs (TID).  A new thread's TID is
@@ -325,16 +325,16 @@ juntamente com o <span class="plainlinks">[http://man7.org/linux/man-pages/man2/
 
 # Criação de Processos e Threads
 
-O código central em nossa análise é o [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L1967 linux/kernel/fork.c] (de agora em diante chamado de 'fork.c', que contém sobretudo as funcionalidades necessárias para efetuar a chamada ''fork()'', responsável por criar um novo processo, e chamadas similares.
+O código central em nossa análise é o [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L1967 linux/kernel/fork.c] (de agora em diante chamado de 'fork.c', que contém sobretudo as funcionalidades necessárias para efetuar a chamada *fork()*, responsável por criar um novo processo, e chamadas similares.
 
 ## fork()
 
 Segundo o manual do Linux, o comando fork() cria um novo processo duplicando o processo que realiza a chamada (chamado aqui de processo pai). O processo criado (chamado de processo filho) é uma cópia praticamente exata do processo pai, exceto que o processo filho não herda, essencialmente:
 
-* As ''memory locks'' do pai;
+* As *memory locks* do pai;
 * Os ajustes de semáforos do pai (feitos através de semop(2));
-* As ''record locks'' associadas a um processo por seu pai com fcntl(2);
-* Os ''timers'' do seu pai;
+* As *record locks* associadas a um processo por seu pai com fcntl(2);
+* Os *timers* do seu pai;
 * As operações ou contextos assíncronos de entrada e saída pendentes de seu pai.
 
 Além, é claro, de possuir um PID único, um PPID igual ao PID do processo pai, ter seu uso de recursos (getrusage(2)) e contadores de tempo de CPU (times(2)) resetados e seu conjunto de sinais pendentes esvaziados. Essas são as diferenças fundamentais existentes entre o processo pai e o processo filho recém criado.
@@ -355,13 +355,13 @@ A chamada de sistema fork() é definida em [http://elixir.free-electrons.com/lin
     #endif
 ```
 
-Ou seja, o código da chamada de sistema ''fork()'' é basicamente
+Ou seja, o código da chamada de sistema *fork()* é basicamente
     
 ```C    
     _do_fork(SIGCHLD, 0, 0, NULL, NULL, 0);
 ```
 
-A função ''_do_fork()'' é explicada de forma mais detalhada posteriormente. O parâmetro SIGCHLD é definido em [http://elixir.free-electrons.com/linux/v4.11.7/source/arch/x86/include/uapi/asm/signal.h#L39 linux/arch/x86/include/uapi/asm/signal.h#L39] como
+A função *_do_fork()* é explicada de forma mais detalhada posteriormente. O parâmetro SIGCHLD é definido em [http://elixir.free-electrons.com/linux/v4.11.7/source/arch/x86/include/uapi/asm/signal.h#L39 linux/arch/x86/include/uapi/asm/signal.h#L39] como
 
 ```C
     #define SIGCHLD     17
@@ -371,9 +371,9 @@ e é utilizado para especificar qual é o sinal de retorno a ser enviado para o 
 
 ## vfork()
 
-Assim como a chamada de sistema ''fork()'', esta chamada também é utilizada para criar um processo filho. A principal diferença entre tais chamadas é que ''vfork()'' não copia as tabelas de página do processo pai, sendo utilizada para obter maior desempenho em casos em que uma chamada ''execve()'' é realizada logo após a criação do processo.
+Assim como a chamada de sistema *fork()*, esta chamada também é utilizada para criar um processo filho. A principal diferença entre tais chamadas é que *vfork()* não copia as tabelas de página do processo pai, sendo utilizada para obter maior desempenho em casos em que uma chamada *execve()* é realizada logo após a criação do processo.
 
-Vale notar que atualmente tal chamada é marcada como sendo obsoleta, haja vista que a chamada ''fork()'' passou a utilizar técnicas de ''copy-on-write'', obtendo uma ''performance'' equivalente a da ''vfork()''.
+Vale notar que atualmente tal chamada é marcada como sendo obsoleta, haja vista que a chamada *fork()* passou a utilizar técnicas de *copy-on-write*, obtendo uma *performance* equivalente a da *vfork()*.
 
 Ela é definida em [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L2075 fork.c#L2075] como
 
@@ -386,13 +386,13 @@ Ela é definida em [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel
     #endif
 ```
 
-A ''flag'' ''CLONE_VFORK'' indica que o processo pai quer que o filho acorde com o ''mm_release'', utilizada para indicar que é a chamada ''vfork()'' e a ''flag'' ''CLONE_VM'' diz que a memória virtual é compartilhada entre os dois processos.
+A *flag* *CLONE_VFORK* indica que o processo pai quer que o filho acorde com o *mm_release*, utilizada para indicar que é a chamada *vfork()* e a *flag* *CLONE_VM* diz que a memória virtual é compartilhada entre os dois processos.
 
 ## clone()
 
-A função [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L2084 clone()] é uma interface da glibc para múltiplas chamadas de sistema, o qual realiza a criação de ''task''.
+A função [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L2084 clone()] é uma interface da glibc para múltiplas chamadas de sistema, o qual realiza a criação de *task*.
 
-A função ''clone()'' recebe os seguintes parâmetros, como pode-se ver no protótipo abaixo retirado do manual do Linux:
+A função *clone()* recebe os seguintes parâmetros, como pode-se ver no protótipo abaixo retirado do manual do Linux:
 
 ```C
     // Protótipo para a função clone da glibc:
@@ -401,9 +401,9 @@ A função ''clone()'' recebe os seguintes parâmetros, como pode-se ver no prot
                      /* pid_t *ptid, struct user_desc *tls, pid_t *ctid */ );
 ```
 
-A chamada ''clone()'' tem como retorno o TID (''thread'' ID) da ''task'' filha quando for realizada com sucesso; caso contrário será retornado -1 e um ''ERRNO'' será definido apropriadamente.
+A chamada *clone()* tem como retorno o TID (*thread* ID) da *task* filha quando for realizada com sucesso; caso contrário será retornado -1 e um *ERRNO* será definido apropriadamente.
 
-Diferentemente do ''fork()'', o ''clone()'' permite que processos filhos compartilhem recursos do processo pai. Como por exemplo áreas de memória, vetor de arquivos abertos, ''signal handlers'' dentre outros. Isto é definido através das ''flags'' passadas para a ''syscall''.
+Diferentemente do *fork()*, o *clone()* permite que processos filhos compartilhem recursos do processo pai. Como por exemplo áreas de memória, vetor de arquivos abertos, *signal handlers* dentre outros. Isto é definido através das *flags* passadas para a *syscall*.
 
 A syscall do clone é definida em [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L2082 linux/kernel/fork.c#L2082]:
 
@@ -437,21 +437,21 @@ A syscall do clone é definida em [http://elixir.free-electrons.com/linux/v4.11.
     #endif
 ```
 
-Basicamente, a chamada de sistema ''clone()'' chama a ''_do_fork()'' passando mais argumentos do que as chamadas ''fork()'' ou ''vfork()''. Devido às ''flags'' passadas, ''clone()'' provê maior flexibilidade dentre estas 3 funções, tendo controle sobre o compartilhamento de recursos entre o processo pai e filho.
+Basicamente, a chamada de sistema *clone()* chama a *_do_fork()* passando mais argumentos do que as chamadas *fork()* ou *vfork()*. Devido às *flags* passadas, *clone()* provê maior flexibilidade dentre estas 3 funções, tendo controle sobre o compartilhamento de recursos entre o processo pai e filho.
 
 ### Parâmetros
 
-A função ''clone()'' da glibc possui os seguintes argumentos:
+A função *clone()* da glibc possui os seguintes argumentos:
 
-* **fn**: quando o processo é criado por ''clone()'', este executa a função ''fn(arg)''. ''fn'' é um ponteiro para uma função que é invocada pelo processo filho no início da sua execução. Os argumentos para esta função são passados através do parâmetro ''arg''.
+* **fn**: quando o processo é criado por *clone()*, este executa a função *fn(arg)*. *fn* é um ponteiro para uma função que é invocada pelo processo filho no início da sua execução. Os argumentos para esta função são passados através do parâmetro *arg*.
 
-* **child_stack**: especifica o endereço da pilha utilizada pelo processo filho. O processo pai deve alocar um espaço de memória para a pilha do filho e passar o ponteiro deste espaço para o ''clone()''.
+* **child_stack**: especifica o endereço da pilha utilizada pelo processo filho. O processo pai deve alocar um espaço de memória para a pilha do filho e passar o ponteiro deste espaço para o *clone()*.
 
-* **flags**: constantes que indicam o que será compartilhado entre o processo pai e o processo filho, como, por exemplo, os vetores de arquivos abertos, as páginas da memória virtual, ''signal handlers'', entre outros. Pode-se conferir as ''flags'' na seção abaixo.
+* **flags**: constantes que indicam o que será compartilhado entre o processo pai e o processo filho, como, por exemplo, os vetores de arquivos abertos, as páginas da memória virtual, *signal handlers*, entre outros. Pode-se conferir as *flags* na seção abaixo.
 
 ## Clone flags
 
-Em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/linux/sched.h linux/include/uapi/linux/sched.h] estão definidas as políticas de escalonamento e as ''cloning flags'', apresentadas abaixo:
+Em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/linux/sched.h linux/include/uapi/linux/sched.h] estão definidas as políticas de escalonamento e as *cloning flags*, apresentadas abaixo:
 
 ```C
     #define CSIGNAL              0x000000ff  /* signal mask to be sent at exit */
@@ -482,13 +482,13 @@ Em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/linux/sch
 
 ### Retorno da função
 
-Quando a função do  processo filho encerrar, este retornará o valor da função passada e será o código de saída para o processo filho (a thread do processo filho também pode ser terminada explicitamente chamando ''exit(2)'' ou recebendo um sinal). 
+Quando a função do  processo filho encerrar, este retornará o valor da função passada e será o código de saída para o processo filho (a thread do processo filho também pode ser terminada explicitamente chamando *exit(2)* ou recebendo um sinal). 
 
-Além disso, segundo o manual, o byte menos significativo contém o número do ''termination signal'', que é enviado quando o processo filho termina. Se nenhum sinal é especificado diferentemente de ''SIGCHLD'', então o processo pai deve especificar a opção ''__WALL'' ou ''__WCLONE'' quando espera pelo filho com wait(2).
+Além disso, segundo o manual, o byte menos significativo contém o número do *termination signal*, que é enviado quando o processo filho termina. Se nenhum sinal é especificado diferentemente de *SIGCHLD*, então o processo pai deve especificar a opção *__WALL* ou *__WCLONE* quando espera pelo filho com wait(2).
 
 ## _do_fork()
 
-A função ''_do_fork()'' é responsável por realizar de fato o que se espera da criação de uma nova ''task''.
+A função *_do_fork()* é responsável por realizar de fato o que se espera da criação de uma nova *task*.
 
 Seu código é apresentado abaixo
 
@@ -572,7 +572,7 @@ Seu código é apresentado abaixo
     }
 ```
 
-###Parâmetros
+### Parâmetros
 
 ```C
     long _do_fork(unsigned long clone_flags,
@@ -583,23 +583,23 @@ Seu código é apresentado abaixo
                   unsigned long tls)
 ```
 
-A função ''_do_fork()'' recebe os seguintes parâmetros:
+A função *_do_fork()* recebe os seguintes parâmetros:
 
-* **clone_flags**: ''Flags'' que especificam quais áreas da memória devem ser copiadas para o filho e outras informações, como qual sinal deve ser enviado ao processo pai quando o filho terminar (no caso do ''fork()'', por exemplo, é o sinal ''SIGCHLD'');
+* **clone_flags**: *Flags* que especificam quais áreas da memória devem ser copiadas para o filho e outras informações, como qual sinal deve ser enviado ao processo pai quando o filho terminar (no caso do *fork()*, por exemplo, é o sinal *SIGCHLD*);
 
 * **stack_start**: Ponteiro da pilha a ser atribuído ao registrador esp do processo filho;
 
-* **stack_size**: Utilizado apenas no ''copy_thread_tls()'', ver discussão em [5], onde se debate que este parâmetro é utilizado somente ao fazer um ''fork'' de ''kernel thread'' para passar argumentos, e nunca como uma ''stack size''. Sugere-se então para mudar o nome para ''kthread_arg'';
+* **stack_size**: Utilizado apenas no *copy_thread_tls()*, ver discussão em [5], onde se debate que este parâmetro é utilizado somente ao fazer um *fork* de *kernel thread* para passar argumentos, e nunca como uma *stack size*. Sugere-se então para mudar o nome para *kthread_arg*;
 
-* ***parent_tidptr**: Especifica o endereço de uma variável do processo pai para guardar o PID da nova thread (ver a ''flag'' CLONE_PARENT_SETID);
+* ***parent_tidptr**: Especifica o endereço de uma variável do processo pai para guardar o PID da nova thread (ver a *flag* CLONE_PARENT_SETID);
 
-* ***child_tidptr**: Especifica o endereço de uma variável da nova thread para guardar seu PID (ver a ''flag'' CLONE_CHILD_SETTID);
+* ***child_tidptr**: Especifica o endereço de uma variável da nova thread para guardar seu PID (ver a *flag* CLONE_CHILD_SETTID);
 
-* **tls**: É o endereço de uma ''Thread Local Storage'' (TLS) para a nova ''thread'' (ver ''flag'' ''CLONE_SETTLS'').
+* **tls**: É o endereço de uma *Thread Local Storage* (TLS) para a nova *thread* (ver *flag* *CLONE_SETTLS*).
 
 ### Retorno da função
 
-Como já se sabe, a função ''fork()'' retorna o PID do processo filho para o pai e o valor 0 para o filho. Ao observar o código acima, nota-se que a variável **nr** é utilizada como retorno da função ''_do_fork()''.
+Como já se sabe, a função *fork()* retorna o PID do processo filho para o pai e o valor 0 para o filho. Ao observar o código acima, nota-se que a variável **nr** é utilizada como retorno da função *_do_fork()*.
 
 Na linha 
 
@@ -607,11 +607,11 @@ Na linha
     nr = pid_vnr(pid);
 ```
 
-o valor do PID do filho é passado para a variável ''nr'' e será retornado para o processo pai, mas há de se notar que é necessário realizar mais do que isso para retornar 0 para o processo filho.
+o valor do PID do filho é passado para a variável *nr* e será retornado para o processo pai, mas há de se notar que é necessário realizar mais do que isso para retornar 0 para o processo filho.
 
-Para entender como esse valor é passado, é necessário olhar a função ''copy_thread_tls()''. Essa função depende da plataforma em questão, e para a arquitetura X86_64 ela é definida em [http://elixir.free-electrons.com/linux/v4.11.7/source/arch/x86/kernel/process_64.c#L146 linux/arch/x86/kernel/process_64.c#L146].
+Para entender como esse valor é passado, é necessário olhar a função *copy_thread_tls()*. Essa função depende da plataforma em questão, e para a arquitetura X86_64 ela é definida em [http://elixir.free-electrons.com/linux/v4.11.7/source/arch/x86/kernel/process_64.c#L146 linux/arch/x86/kernel/process_64.c#L146].
 
-A função ''_do_fork()'' chama a [http://elixir.free-electrons.com/linux/latest/source/kernel/fork.c#L1491 copy_process()], que na linha [http://elixir.free-electrons.com/linux/latest/source/kernel/fork.c#L1718 1718] (mostrada abaixo) chama a ''copy_thread_tls()''.
+A função *_do_fork()* chama a [http://elixir.free-electrons.com/linux/latest/source/kernel/fork.c#L1491 copy_process()], que na linha [http://elixir.free-electrons.com/linux/latest/source/kernel/fork.c#L1718 1718] (mostrada abaixo) chama a *copy_thread_tls()*.
 
 ```C
     ...
@@ -619,7 +619,7 @@ A função ''_do_fork()'' chama a [http://elixir.free-electrons.com/linux/latest
     ...
 ```
 
-A ''copy_thread_tls()'' então é responsável por copiar as estruturas de dados de armazenamento local relacionadas à ''thread''.
+A *copy_thread_tls()* então é responsável por copiar as estruturas de dados de armazenamento local relacionadas à *thread*.
 
 ```C
     int copy_thread_tls(unsigned long clone_flags, unsigned long sp,
@@ -698,9 +698,9 @@ A ''copy_thread_tls()'' então é responsável por copiar as estruturas de dados
     }
 ```
 
-Esta função cria um novo ''stack frame'' e ajusta o valores de seus segmentos corretamente.
+Esta função cria um novo *stack frame* e ajusta o valores de seus segmentos corretamente.
 
-A variável ''childregs'' é do tipo ''struct *pt_regs'' e representa os valores dos registradores daquela ''task'', como apresentado abaixo:
+A variável *childregs* é do tipo *struct *pt_regs* e representa os valores dos registradores daquela *task*, como apresentado abaixo:
 
 ```C
     struct pt_regs {
@@ -746,9 +746,9 @@ Por convenção, sabe-se que o retorno das funções é passado pelo registrador
 
 ### wake_up_new_task()
 
-A função [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/sched/core.c wake_up_new_task()] é responsável por colocar a ''task'' recém criada na ''runqueue'' pela primeira vez.
+A função [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/sched/core.c wake_up_new_task()] é responsável por colocar a *task* recém criada na *runqueue* pela primeira vez.
 
-Ela seta seta o estado da ''task'' para TASK_RUNNING e chama o ''__set_task_cpu()'', que por sua vez chama o ''select_task_rq()''.
+Ela seta seta o estado da *task* para TASK_RUNNING e chama o *__set_task_cpu()*, que por sua vez chama o *select_task_rq()*.
 
 ```C
 	/*
@@ -801,7 +801,7 @@ Ela seta seta o estado da ''task'' para TASK_RUNNING e chama o ''__set_task_cpu(
 
 ### select_task_rq()
 
-A função [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/sched/core.c#L1553 select_task_rq()], apresentada abaixo, seleciona uma CPU disponível, baseando também no escalonador referente à política de escalonamento a ser utilizada para a ''task'' (e.g., ''fair''), levando em conta também a afinidade da ''task'' com as CPUs e o campo ''cpus_allowed'' da ''task_struct''.
+A função [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/sched/core.c#L1553 select_task_rq()], apresentada abaixo, seleciona uma CPU disponível, baseando também no escalonador referente à política de escalonamento a ser utilizada para a *task* (e.g., *fair*), levando em conta também a afinidade da *task* com as CPUs e o campo *cpus_allowed* da *task_struct*.
 
 ```C
 	/*
@@ -837,7 +837,7 @@ A função [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/sched/c
 
 ## do_fork()
 
-Existe também uma função chamada ''do_fork()'', por motivos de compatibilidade com arquiteturas que chamam ''do_fork()'' diretamente:
+Existe também uma função chamada *do_fork()*, por motivos de compatibilidade com arquiteturas que chamam *do_fork()* diretamente:
 
 ```C
     #ifndef CONFIG_HAVE_COPY_THREAD_TLS
@@ -855,7 +855,7 @@ Existe também uma função chamada ''do_fork()'', por motivos de compatibilidad
     #endif
 ```
 
-Basicamente, ela chama ''_do_fork()'' com o parâmetro ''tls = 0''.
+Basicamente, ela chama *_do_fork()* com o parâmetro *tls = 0*.
 
 ## pthreads
 
@@ -886,14 +886,14 @@ ou seja, uma thread.
     ...
 ```
 
-''p'' é a nova [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L483 task_struct]
-e ''current'' é a <span class="plainlinks">[http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L483 task_struct]</span> do chamador.
+*p* é a nova [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L483 task_struct]
+e *current* é a <span class="plainlinks">[http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L483 task_struct]</span> do chamador.
 
-Quando passado a ''flag'' <span class="plainlinks">[http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/linux/sched.h#L15 CLONE_THREAD]</span>,
+Quando passado a *flag* <span class="plainlinks">[http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/linux/sched.h#L15 CLONE_THREAD]</span>,
 o <span class="plainlinks">[http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L617 tgid]</span> do pai é passado para o filho.
 Ou seja, na visão do usuário, os dois processos tem o mesmo PID.
 
-As ''threads'' também precisam ter o mesmo tratamento de sinais e compartilhar memória. Isso é especificado no <span class="plainlinks">[http://man7.org/linux/man-pages/man2/clone.2.html manual do clone]</span><nowiki>:</nowiki>
+As *threads* também precisam ter o mesmo tratamento de sinais e compartilhar memória. Isso é especificado no <span class="plainlinks">[http://man7.org/linux/man-pages/man2/clone.2.html manual do clone]</span><nowiki>:</nowiki>
 
     Since Linux 2.5.35, flags must also include CLONE_SIGHAND if
     CLONE_THREAD is specified (and note that, since Linux
@@ -921,9 +921,9 @@ E reforçado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fo
 
 ## copy_process()
 
-A função [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L1491 copy_process()] é responsável por realmente criar a nova ''task'' como cópia da antiga. Ela é chamada por duas funções, a ''_do_fork()'' e a ''fork_idle()''. 
+A função [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L1491 copy_process()] é responsável por realmente criar a nova *task* como cópia da antiga. Ela é chamada por duas funções, a *_do_fork()* e a *fork_idle()*. 
 
-A função ''fork_idle()'' cria uma ''idle thread'' (''thread'' ociosa), usada para economizar energia quando não há trabalho a ser feito, até outra ''thread'' desejar ser reescalonada.
+A função *fork_idle()* cria uma *idle thread* (*thread* ociosa), usada para economizar energia quando não há trabalho a ser feito, até outra *thread* desejar ser reescalonada.
 
 ### Parâmetros
 
@@ -939,17 +939,17 @@ A função ''fork_idle()'' cria uma ''idle thread'' (''thread'' ociosa), usada p
                         int node)                   // Número do node em que está a task
 ```
 
-A função ''copy_process()'' recebe os seguintes parâmetros:
+A função *copy_process()* recebe os seguintes parâmetros:
 
-clone_flags, stack_start, stack_size, child_tidptr e tls, que já foram explicadas na seção de parâmetros da função ''do_fork()'', além de
+clone_flags, stack_start, stack_size, child_tidptr e tls, que já foram explicadas na seção de parâmetros da função *do_fork()*, além de
 
-* **pid**: PID que pode ser previamente alocado e passado. Também pode ser passado o valor ''NULL'' para que este seja alocado dentro da função ''copy_process()''.
+* **pid**: PID que pode ser previamente alocado e passado. Também pode ser passado o valor *NULL* para que este seja alocado dentro da função *copy_process()*.
 
-* **trace**: Flags que determinam qual evento reportar ao ''ptracer'' (e se o evento deve ser reportado).
+* **trace**: Flags que determinam qual evento reportar ao *ptracer* (e se o evento deve ser reportado).
 
-* **node**: Node no qual está (ou deve ser) alocada a ''task''.
+* **node**: Node no qual está (ou deve ser) alocada a *task*.
 
-A função ''_do_fork()'', como mostrado anteriormente, chama a função ''copy_process()'' com os parâmetros ''*pid'' = ''NULL'' e ''node'' = ''NUMA_NO_NODE'', enquanto que os outros parâmetros são os mesmos parâmetros passados ao próprio ''_do_fork()''. Já a função ''fork_idle()'' chama a função ''copy_process()'' com os parâmetros a seguir:
+A função *_do_fork()*, como mostrado anteriormente, chama a função *copy_process()* com os parâmetros **pid* = *NULL* e *node* = *NUMA_NO_NODE*, enquanto que os outros parâmetros são os mesmos parâmetros passados ao próprio *_do_fork()*. Já a função *fork_idle()* chama a função *copy_process()* com os parâmetros a seguir:
 
 ```C
     struct task_struct *fork_idle(int cpu)
@@ -962,15 +962,15 @@ A função ''_do_fork()'', como mostrado anteriormente, chama a função ''copy_
  
 ### Retorno da função
 
-A função ''copy_process()'' retorna um ponteiro para a ''task struct'' da ''task'' criada (a variável **p**), se não houver nenhum erro em sua execução. Caso contrário, a função retorna um ponteiro para erros ''ERR_PTR'', que basicamente indica o número do erro que ocorreu, referenciado pela variável **retval**.
+A função *copy_process()* retorna um ponteiro para a *task struct* da *task* criada (a variável **p**), se não houver nenhum erro em sua execução. Caso contrário, a função retorna um ponteiro para erros *ERR_PTR*, que basicamente indica o número do erro que ocorreu, referenciado pela variável **retval**.
 
-Um ponto importante ao se notar na implementação do ''fork'', como descrito por Love [4], é que se o retorno do ''copy_process()'' for sucedido, o ''kernel'' executa (pelo menos na teoria), a ''task'' filha primeiro. Isso é planejado para que, se a ''tasḱ'' filha chama a função ''exec()'' imediatamente após o ''fork()'', se elimina qualquer ''overhead'' de ''copy-on-write'' que poderia ocorrer caso a ''task'' pai execute primeiro e escreva no espaço de endereçamento.
+Um ponto importante ao se notar na implementação do *fork*, como descrito por Love [4], é que se o retorno do *copy_process()* for sucedido, o *kernel* executa (pelo menos na teoria), a *task* filha primeiro. Isso é planejado para que, se a *tasḱ* filha chama a função *exec()* imediatamente após o *fork()*, se elimina qualquer *overhead* de *copy-on-write* que poderia ocorrer caso a *task* pai execute primeiro e escreva no espaço de endereçamento.
 
 ### Execução da função
 
-Em termos gerais, conforme descrito por Love [4], a função ''copy_process()'' executa os seguintes passos:
+Em termos gerais, conforme descrito por Love [4], a função *copy_process()* executa os seguintes passos:
 
-* Verifica se foram "setadas" ''flags'' que não deveriam estar juntas:
+* Verifica se foram "setadas" *flags* que não deveriam estar juntas:
 
 ```C
     static __latent_entropy struct task_struct *copy_process(...)
@@ -1006,21 +1006,21 @@ Em termos gerais, conforme descrito por Love [4], a função ''copy_process()'' 
         }
 ```
 
-* Chama a função ''dup_task_struct()'', que cria uma nova pilha do kernel, uma nova ''thread_info'' e a ''task_struct'' da ''task'' nova:
+* Chama a função *dup_task_struct()*, que cria uma nova pilha do kernel, uma nova *thread_info* e a *task_struct* da *task* nova:
 
 ```C
         p = dup_task_struct(current, node);
         ...
 ```
 
-* Aloca a pilha de retorno para a nova ''task'' (deve ser feito antes dos próximos passos por causa da ordem das rotinas de erro):
+* Aloca a pilha de retorno para a nova *task* (deve ser feito antes dos próximos passos por causa da ordem das rotinas de erro):
 
 ```C
         ftrace_graph_init_task(p);
         ...
 ```
 
-* Checa se os limites de recursos (número de ''threads'', por exemplo) não são excedidos pela criação da nova ''task'':
+* Checa se os limites de recursos (número de *threads*, por exemplo) não são excedidos pela criação da nova *task*:
 
 ```C
         retval = -EAGAIN;
@@ -1038,9 +1038,9 @@ Em termos gerais, conforme descrito por Love [4], a função ''copy_process()'' 
         ...
 ```
 
-* A partir deste momento, a ''task'' filha se diferencia da ''task'' pai. Vários membros do descritor de processo recebem o valor 0 ou seus valores iniciais. Exemplos de tais membros são as ''flags'' ''PF_SUPERPRIV'', ''PF_WQ_WORKER'' e ''PF_IDLE'', que são "resetadas" e ''PF_FORKNOEXEC'', que é ativada (cujos significados se encontram na seção ''PF Flags''), os ''times'' (''utime'', ''stime'', ''gtime'', ''start_time'', ''real_start_time'', etc.), as políticas de gerenciamento de memória, variáveis de ''interrupt requests'', entre outros.
+* A partir deste momento, a *task* filha se diferencia da *task* pai. Vários membros do descritor de processo recebem o valor 0 ou seus valores iniciais. Exemplos de tais membros são as *flags* *PF_SUPERPRIV*, *PF_WQ_WORKER* e *PF_IDLE*, que são "resetadas" e *PF_FORKNOEXEC*, que é ativada (cujos significados se encontram na seção *PF Flags*), os *times* (*utime*, *stime*, *gtime*, *start_time*, *real_start_time*, etc.), as políticas de gerenciamento de memória, variáveis de *interrupt requests*, entre outros.
 
-É nesta etapa que também começa a seta os valores dos campos ''children'' e ''sibling'', da lista duplamente encadeada.
+É nesta etapa que também começa a seta os valores dos campos *children* e *sibling*, da lista duplamente encadeada.
 
 ```C
         delayacct_tsk_init(p);  /* Must remain after dup_task_struct() */
@@ -1141,7 +1141,7 @@ Em termos gerais, conforme descrito por Love [4], a função ''copy_process()'' 
 
 Em outras palavras, ele simplesmente inicializa uma lista duplamente encadeada.
 
-* Copia ou compartilha o vetor de arquivos abertos, informações do sistema de arquivos, ''signal handlers'', o espaço de endereçamento da ''task'', o ''namespace'', entre outros, de acordo com as ''flags'' passadas para o ''clone()'':
+* Copia ou compartilha o vetor de arquivos abertos, informações do sistema de arquivos, *signal handlers*, o espaço de endereçamento da *task*, o *namespace*, entre outros, de acordo com as *flags* passadas para o *clone()*:
 
 ```C
         /* Perform scheduler related setup. Assign this task to a CPU. */
@@ -1173,7 +1173,7 @@ Em outras palavras, ele simplesmente inicializa uma lista duplamente encadeada.
         ...
 ```
 
-* Aloca o PID e o atribui para o PID da ''task'':
+* Aloca o PID e o atribui para o PID da *task*:
 
 ```C
         if (pid != &init_struct_pid) {
@@ -1186,7 +1186,7 @@ Em outras palavras, ele simplesmente inicializa uma lista duplamente encadeada.
         ...
 ```
 
-* Determina o sinal de saída (no caso do ''fork()'', será o sinal ''SIGCHLD''), o líder do grupo de ''threads'', o ''TGID'' e o pai da ''task'' de acordo com as ''flags'' ''CLONE_THREAD'' e ''CLONE_PARENT''. Note também o ''pid'' e o ''tgid'' abordados anteriormente. Como pode-se ver, a primeira ''thread'' de um processo é a líder do grupo e tem ''tgid'' e ''pid'' iguais.
+* Determina o sinal de saída (no caso do *fork()*, será o sinal *SIGCHLD*), o líder do grupo de *threads*, o *TGID* e o pai da *task* de acordo com as *flags* *CLONE_THREAD* e *CLONE_PARENT*. Note também o *pid* e o *tgid* abordados anteriormente. Como pode-se ver, a primeira *thread* de um processo é a líder do grupo e tem *tgid* e *pid* iguais.
 
 ```C
         /* ok, now we should be set up.. */
@@ -1217,7 +1217,7 @@ Em outras palavras, ele simplesmente inicializa uma lista duplamente encadeada.
         ...
 ```
 
-* Se for a ''task'' filha, inicializa o ''ptrace'' e ''pid''. Além disso, se for a líder do grupo, inicializa o ''PGID'', ''SID'' e outras informações. Se não for líder, incrementa o número de ''threads'' do líder do grupo.
+* Se for a *task* filha, inicializa o *ptrace* e *pid*. Além disso, se for a líder do grupo, inicializa o *PGID*, *SID* e outras informações. Se não for líder, incrementa o número de *threads* do líder do grupo.
 
 ```C
         if (likely(p->pid)) {
@@ -1264,7 +1264,7 @@ Em outras palavras, ele simplesmente inicializa uma lista duplamente encadeada.
         
 * É necessário também atentar-se à parte da lista duplamente encadeada novamente.
 
-A função ''list_add_tail()'', apresentada abaixo, insere um nó antes do nó ''head''.
+A função *list_add_tail()*, apresentada abaixo, insere um nó antes do nó *head*.
 
 ```C
 	/**
@@ -1281,7 +1281,7 @@ A função ''list_add_tail()'', apresentada abaixo, insere um nó antes do nó '
 	}
 ```
 	
-Ou seja, a linha a seguir torna a nova ''task'' sendo alocada irmã outros filhos da ''task'' pai.
+Ou seja, a linha a seguir torna a nova *task* sendo alocada irmã outros filhos da *task* pai.
 
 ```C
 	...
@@ -1289,7 +1289,7 @@ Ou seja, a linha a seguir torna a nova ''task'' sendo alocada irmã outros filho
 	...
 ```
 
-* O seguinte código incrementa o número de ''forks'' realizados, efetua ''unlocks'', limpa o que for necessário e retorna a ''task'' criada:
+* O seguinte código incrementa o número de *forks* realizados, efetua *unlocks*, limpa o que for necessário e retorna a *task* criada:
 
 ```C
         total_forks++;
@@ -1307,7 +1307,7 @@ Ou seja, a linha a seguir torna a nova ''task'' sendo alocada irmã outros filho
 
 ### PF Flags
 
-Em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L1213 linux/include/linux/sched.h] estão definidas as possíveis ''flags'' de cada ''task'', apresentadas abaixo:
+Em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L1213 linux/include/linux/sched.h] estão definidas as possíveis *flags* de cada *task*, apresentadas abaixo:
 
 ```C
     /*
@@ -1345,9 +1345,9 @@ Em [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#
 
 ## fork_init
 
-Esse procedimento é chamado pela main do ''kernel'' para inicializar onde serão armazenados as ''task_struct''.
+Esse procedimento é chamado pela main do *kernel* para inicializar onde serão armazenados as *task_struct*.
 
-Veremos como o ''kernel'' armazena e manipula as ''task_struct''. Primeiramente, observa-se o [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L441 código]:
+Veremos como o *kernel* armazena e manipula as *task_struct*. Primeiramente, observa-se o [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L441 código]:
 
 ```
     void __init fork_init(void)
@@ -1368,7 +1368,7 @@ Veremos como o ''kernel'' armazena e manipula as ''task_struct''. Primeiramente,
     }
 ```
 
-''task_struct_cachep'' é um ponteiro para a posição de memória que armazena onde ficarão todas as ''task_struct''. No <code>fork_init()</code>, esse ponteiro é inicializado e ele é utilizado em todas as criações de processo, pois é utilizado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L151 código] de <code>alloc_task_struct_node()</code>:
+*task_struct_cachep* é um ponteiro para a posição de memória que armazena onde ficarão todas as *task_struct*. No <code>fork_init()</code>, esse ponteiro é inicializado e ele é utilizado em todas as criações de processo, pois é utilizado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L151 código] de <code>alloc_task_struct_node()</code>:
 
 ```C
     static inline struct task_struct *alloc_task_struct_node(int node)
@@ -1409,7 +1409,7 @@ que é usado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fo
 
 que é usado em todas as criações de processo.
 
-Nesse procedimento também é determinado o tamanho máximo de ''threads'' do sistema.
+Nesse procedimento também é determinado o tamanho máximo de *threads* do sistema.
 
 ```C
     void __init fork_init(void)
@@ -1444,7 +1444,7 @@ O [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L416 cód
     }
 ```
 
-determina o valor de ''max_threads'', que é utilizado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L1593 código] de <code>copy_process()</code>:
+determina o valor de *max_threads*, que é utilizado no [http://elixir.free-electrons.com/linux/v4.11.7/source/kernel/fork.c#L1593 código] de <code>copy_process()</code>:
 
 ```C
     static __latent_entropy struct task_struct *copy_process(
