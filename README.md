@@ -1,288 +1,3 @@
-### copymm
-A cópia das áreas de memória começa nesse procedimento. Aqui é verificado a flag "CLONE_VM" e a explicação do tratamento vem a seguir:
-
-```C
-    static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
-    {
-        struct mm_struct *mm, *oldmm;
-        int retval;
-    
-        tsk->min_flt = tsk->maj_flt = 0;
-        tsk->nvcsw = tsk->nivcsw = 0;
-    #ifdef CONFIG_DETECT_HUNG_TASK
-        tsk->last_switch_count = tsk->nvcsw + tsk->nivcsw;
-    #endif
-    
-        tsk->mm = NULL;
-        tsk->active_mm = NULL;
-    
-        /*
-         * Are we cloning a kernel thread?
-         *
-         * We need to steal a active VM for that..
-         */
-        oldmm = current->mm;
-        if (!oldmm)
-            return 0;
-    
-        /* initialize the new vmacache entries */
-        vmacache_flush(tsk);
-    
-        if (clone_flags & CLONE_VM) {
-            mmget(oldmm);
-            mm = oldmm;
-            goto good_mm;
-        }
-    
-        retval = -ENOMEM;
-        mm = dup_mm(tsk);
-        if (!mm)
-            goto fail_nomem;
-    
-    good_mm:
-        tsk->mm = mm;
-        tsk->active_mm = mm;
-        return 0;
-    
-    fail_nomem:
-        return retval;
-    }
-```
-
-Caso a flag "CLONE_VM" seja passado para "copy_process()", o ponteiro da memória do processo pai é passado para o filho.
-Como fica evidenciado neste recorte de código:
-
-```C
-    static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
-    {
-        struct mm_struct *mm, *oldmm;
-        ...
-        oldmm = current->mm;
-        ...
-        if (clone_flags & CLONE_VM) {
-            mmget(oldmm);
-            mm = oldmm;
-            goto good_mm;
-        }
-        ...
-    good_mm:
-        tsk->mm = mm;
-        tsk->active_mm = mm;
-        return 0;
-        ...
-    }
-```
-
-"mmget()" simplesmente faz um incremento no número de usuários que apontam para aquela memória.
-
-```C
-    static inline void mmget(struct mm_struct *mm)
-    {
-        atomic_inc(&mm->mm_users);
-    }
-```
-
-Como é sabido, quando o contador de referência daquela memória chega a zero, ela fica marcada para ser liberada.
-Isso é comentado no kernel, na definição de "mm_struct".
-
-```C
-    struct mm_struct {
-        ...
-        /**
-         * @mm_users: The number of users including userspace.
-         *
-         * Use mmget()/mmget_not_zero()/mmput() to modify. When this drops
-         * to 0 (i.e. when the task exits and there are no other temporary
-         * reference holders), we also release a reference on @mm_count
-         * (which may then free the &struct mm_struct if @mm_count also
-         * drops to 0).
-         */
-        atomic_t mm_users;
-    
-        /**
-         * @mm_count: The number of references to &struct mm_struct
-         * (@mm_users count as 1).
-         *
-         * Use mmgrab()/mmdrop() to modify. When this drops to 0, the
-         * &struct mm_struct is freed.
-         */
-        atomic_t mm_count;
-        ...
-    }
-```
-
-Caso a flag "CLONE_VM" não seja passado para "copy_process()", será alocado uma nova posição na memória
-e copiado o conteúdo da memória do pai nessa nova posição.
-
-```C
-    static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
-    {
-        struct mm_struct *mm, *oldmm;
-        ...
-        mm = dup_mm(tsk);
-        if (!mm)
-            goto fail_nomem;
-    
-    good_mm:
-        tsk->mm = mm;
-        tsk->active_mm = mm;
-        return 0;
-        ...
-    }
-```
-
-O procedimento "dup_mm()" é o responsável por alocar memória e copiar a memória do pai.
-Analisando o código do "dup_mm()"
-
-```C
-    /*
-     * Allocate a new mm structure and copy contents from the
-     * mm structure of the passed in task structure.
-     */
-    static struct mm_struct *dup_mm(struct task_struct *tsk)
-    {
-        struct mm_struct *mm, *oldmm = current->mm;
-        int err;
-    
-        mm = allocate_mm();
-        if (!mm)
-            goto fail_nomem;
-    
-        memcpy(mm, oldmm, sizeof(*mm));
-    
-        if (!mm_init(mm, tsk, mm->user_ns))
-            goto fail_nomem;
-    
-        err = dup_mmap(mm, oldmm);
-        if (err)
-            goto free_pt;
-    
-        mm->hiwater_rss = get_mm_rss(mm);
-        mm->hiwater_vm = mm->total_vm;
-    
-        if (mm->binfmt && !try_module_get(mm->binfmt->module))
-            goto free_pt;
-    
-        return mm;
-    
-    free_pt:
-        /* don't put binfmt in mmput, we haven't got module yet */
-        mm->binfmt = NULL;
-        mmput(mm);
-    
-    fail_nomem:
-        return NULL;
-    }
-```
-
-a alocação na memória acontece pela macro "allocate_mm()"
-
-```C
-    #define allocate_mm()	(kmem_cache_alloc(mm_cachep, GFP_KERNEL))
-```
-
-que aloca memória em "mm_cachep" que é um espaço reservado para alocações de todas as
-memórias ligadas à mm de task_struct.
-O código da função "kmem_cache_alloc()" é apresentado abaixo:
-
-```C
-/**
- * kmem_cache_alloc - Allocate an object
- * @cachep: The cache to allocate from.
- * @flags: See kmalloc().
- *
- * Allocate an object from this cache.  The flags are only relevant
- * if the cache has no available objects.
- */
-void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
-{
-	void *ret = slab_alloc(cachep, flags, _RET_IP_);
-
-	kasan_slab_alloc(cachep, ret, flags);
-	trace_kmem_cache_alloc(_RET_IP_, ret,
-			       cachep->object_size, cachep->size, flags);
-
-	return ret;
-}
-```
-
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA (FALAR DO GFP_KERNEL)
-
-```C
-    /* SLAB cache for mm_struct structures (tsk->mm) */
-    static struct kmem_cache *mm_cachep;
-```
-
-a memória alocada em "mm_cahep" é atribuida para a "mm" da "task_struct" dentro de "mm_init()".
-
-```C
-    static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
-        struct user_namespace *user_ns)
-    {
-        mm->mmap = NULL;
-        mm->mm_rb = RB_ROOT;
-        mm->vmacache_seqnum = 0;
-        atomic_set(&mm->mm_users, 1);
-        atomic_set(&mm->mm_count, 1);
-        init_rwsem(&mm->mmap_sem);
-        INIT_LIST_HEAD(&mm->mmlist);
-        mm->core_state = NULL;
-        atomic_long_set(&mm->nr_ptes, 0);
-        mm_nr_pmds_init(mm);
-        mm->map_count = 0;
-        mm->locked_vm = 0;
-        mm->pinned_vm = 0;
-        memset(&mm->rss_stat, 0, sizeof(mm->rss_stat));
-        spin_lock_init(&mm->page_table_lock);
-        mm_init_cpumask(mm);
-        mm_init_aio(mm);
-        mm_init_owner(mm, p);
-        mmu_notifier_mm_init(mm);
-        clear_tlb_flush_pending(mm);
-    #if defined(CONFIG_TRANSPARENT_HUGEPAGE) && !USE_SPLIT_PMD_PTLOCKS
-        mm->pmd_huge_pte = NULL;
-    #endif
-    
-        if (current->mm) {
-            mm->flags = current->mm->flags & MMF_INIT_MASK;
-            mm->def_flags = current->mm->def_flags & VM_INIT_DEF_MASK;
-        } else {
-            mm->flags = default_dump_filter;
-            mm->def_flags = 0;
-        }
-    
-        if (mm_alloc_pgd(mm))
-            goto fail_nopgd;
-    
-        if (init_new_context(p, mm))
-            goto fail_nocontext;
-    
-        mm->user_ns = get_user_ns(user_ns);
-        return mm;
-    
-    fail_nocontext:
-        mm_free_pgd(mm);
-    fail_nopgd:
-        free_mm(mm);
-        return NULL;
-    }
-```
-
-Em "mm_init()" ocorre a inicialização de toda a memória passada por parâmetro, inclusive o owner da "mm",
-que é inicializado em "mm_init_owner()"
-
-```C
-    static void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
-    {
-    #ifdef CONFIG_MEMCG
-        mm->owner = p;
-    #endif
-    }
-```
-AAAAAAAAAAAAAAAAAAAAAAAAAA (falar do dup_mmap de dup_mm)
-
-
-
 
 # Seminário de SO2 - Representação e criação de processos e *threads* - 2017/1
 
@@ -1458,6 +1173,288 @@ Em outras palavras, ele simplesmente inicializa uma lista duplamente encadeada.
         retval = copy_thread_tls(clone_flags, stack_start, stack_size, p, tls);
         ...
 ```
+
+### copy_mm
+A cópia das áreas de memória começa nesse procedimento. Aqui é verificado a flag "CLONE_VM" e a explicação do tratamento vem a seguir:
+
+```C
+    static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
+    {
+        struct mm_struct *mm, *oldmm;
+        int retval;
+    
+        tsk->min_flt = tsk->maj_flt = 0;
+        tsk->nvcsw = tsk->nivcsw = 0;
+    #ifdef CONFIG_DETECT_HUNG_TASK
+        tsk->last_switch_count = tsk->nvcsw + tsk->nivcsw;
+    #endif
+    
+        tsk->mm = NULL;
+        tsk->active_mm = NULL;
+    
+        /*
+         * Are we cloning a kernel thread?
+         *
+         * We need to steal a active VM for that..
+         */
+        oldmm = current->mm;
+        if (!oldmm)
+            return 0;
+    
+        /* initialize the new vmacache entries */
+        vmacache_flush(tsk);
+    
+        if (clone_flags & CLONE_VM) {
+            mmget(oldmm);
+            mm = oldmm;
+            goto good_mm;
+        }
+    
+        retval = -ENOMEM;
+        mm = dup_mm(tsk);
+        if (!mm)
+            goto fail_nomem;
+    
+    good_mm:
+        tsk->mm = mm;
+        tsk->active_mm = mm;
+        return 0;
+    
+    fail_nomem:
+        return retval;
+    }
+```
+
+Caso a flag "CLONE_VM" seja passado para "copy_process()", o ponteiro da memória do processo pai é passado para o filho.
+Como fica evidenciado neste recorte de código:
+
+```C
+    static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
+    {
+        struct mm_struct *mm, *oldmm;
+        ...
+        oldmm = current->mm;
+        ...
+        if (clone_flags & CLONE_VM) {
+            mmget(oldmm);
+            mm = oldmm;
+            goto good_mm;
+        }
+        ...
+    good_mm:
+        tsk->mm = mm;
+        tsk->active_mm = mm;
+        return 0;
+        ...
+    }
+```
+
+"mmget()" simplesmente faz um incremento no número de usuários que apontam para aquela memória.
+
+```C
+    static inline void mmget(struct mm_struct *mm)
+    {
+        atomic_inc(&mm->mm_users);
+    }
+```
+
+Como é sabido, quando o contador de referência daquela memória chega a zero, ela fica marcada para ser liberada.
+Isso é comentado no kernel, na definição de "mm_struct".
+
+```C
+    struct mm_struct {
+        ...
+        /**
+         * @mm_users: The number of users including userspace.
+         *
+         * Use mmget()/mmget_not_zero()/mmput() to modify. When this drops
+         * to 0 (i.e. when the task exits and there are no other temporary
+         * reference holders), we also release a reference on @mm_count
+         * (which may then free the &struct mm_struct if @mm_count also
+         * drops to 0).
+         */
+        atomic_t mm_users;
+    
+        /**
+         * @mm_count: The number of references to &struct mm_struct
+         * (@mm_users count as 1).
+         *
+         * Use mmgrab()/mmdrop() to modify. When this drops to 0, the
+         * &struct mm_struct is freed.
+         */
+        atomic_t mm_count;
+        ...
+    }
+```
+
+Caso a flag "CLONE_VM" não seja passado para "copy_process()", será alocado uma nova posição na memória
+e copiado o conteúdo da memória do pai nessa nova posição.
+
+```C
+    static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
+    {
+        struct mm_struct *mm, *oldmm;
+        ...
+        mm = dup_mm(tsk);
+        if (!mm)
+            goto fail_nomem;
+    
+    good_mm:
+        tsk->mm = mm;
+        tsk->active_mm = mm;
+        return 0;
+        ...
+    }
+```
+
+O procedimento "dup_mm()" é o responsável por alocar memória e copiar a memória do pai.
+Analisando o código do "dup_mm()"
+
+```C
+    /*
+     * Allocate a new mm structure and copy contents from the
+     * mm structure of the passed in task structure.
+     */
+    static struct mm_struct *dup_mm(struct task_struct *tsk)
+    {
+        struct mm_struct *mm, *oldmm = current->mm;
+        int err;
+    
+        mm = allocate_mm();
+        if (!mm)
+            goto fail_nomem;
+    
+        memcpy(mm, oldmm, sizeof(*mm));
+    
+        if (!mm_init(mm, tsk, mm->user_ns))
+            goto fail_nomem;
+    
+        err = dup_mmap(mm, oldmm);
+        if (err)
+            goto free_pt;
+    
+        mm->hiwater_rss = get_mm_rss(mm);
+        mm->hiwater_vm = mm->total_vm;
+    
+        if (mm->binfmt && !try_module_get(mm->binfmt->module))
+            goto free_pt;
+    
+        return mm;
+    
+    free_pt:
+        /* don't put binfmt in mmput, we haven't got module yet */
+        mm->binfmt = NULL;
+        mmput(mm);
+    
+    fail_nomem:
+        return NULL;
+    }
+```
+
+a alocação na memória acontece pela macro "allocate_mm()"
+
+```C
+    #define allocate_mm()	(kmem_cache_alloc(mm_cachep, GFP_KERNEL))
+```
+
+que aloca memória em "mm_cachep" que é um espaço reservado para alocações de todas as
+memórias ligadas à mm de task_struct.
+O código da função "kmem_cache_alloc()" é apresentado abaixo (/mm/slab.c):
+
+```C
+    /**
+     * kmem_cache_alloc - Allocate an object
+     * @cachep: The cache to allocate from.
+     * @flags: See kmalloc().
+     *
+     * Allocate an object from this cache.  The flags are only relevant
+     * if the cache has no available objects.
+     */
+    void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+    {
+        void *ret = slab_alloc(cachep, flags, _RET_IP_);
+
+        kasan_slab_alloc(cachep, ret, flags);
+        trace_kmem_cache_alloc(_RET_IP_, ret,
+                       cachep->object_size, cachep->size, flags);
+
+        return ret;
+    }
+```
+
+```C
+    /* SLAB cache for mm_struct structures (tsk->mm) */
+    static struct kmem_cache *mm_cachep;
+```
+
+a memória alocada em "mm_cahep" é atribuida para a "mm" da "task_struct" dentro de "mm_init()".
+
+```C
+    static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
+        struct user_namespace *user_ns)
+    {
+        mm->mmap = NULL;
+        mm->mm_rb = RB_ROOT;
+        mm->vmacache_seqnum = 0;
+        atomic_set(&mm->mm_users, 1);
+        atomic_set(&mm->mm_count, 1);
+        init_rwsem(&mm->mmap_sem);
+        INIT_LIST_HEAD(&mm->mmlist);
+        mm->core_state = NULL;
+        atomic_long_set(&mm->nr_ptes, 0);
+        mm_nr_pmds_init(mm);
+        mm->map_count = 0;
+        mm->locked_vm = 0;
+        mm->pinned_vm = 0;
+        memset(&mm->rss_stat, 0, sizeof(mm->rss_stat));
+        spin_lock_init(&mm->page_table_lock);
+        mm_init_cpumask(mm);
+        mm_init_aio(mm);
+        mm_init_owner(mm, p);
+        mmu_notifier_mm_init(mm);
+        clear_tlb_flush_pending(mm);
+    #if defined(CONFIG_TRANSPARENT_HUGEPAGE) && !USE_SPLIT_PMD_PTLOCKS
+        mm->pmd_huge_pte = NULL;
+    #endif
+    
+        if (current->mm) {
+            mm->flags = current->mm->flags & MMF_INIT_MASK;
+            mm->def_flags = current->mm->def_flags & VM_INIT_DEF_MASK;
+        } else {
+            mm->flags = default_dump_filter;
+            mm->def_flags = 0;
+        }
+    
+        if (mm_alloc_pgd(mm))
+            goto fail_nopgd;
+    
+        if (init_new_context(p, mm))
+            goto fail_nocontext;
+    
+        mm->user_ns = get_user_ns(user_ns);
+        return mm;
+    
+    fail_nocontext:
+        mm_free_pgd(mm);
+    fail_nopgd:
+        free_mm(mm);
+        return NULL;
+    }
+```
+
+Em "mm_init()" ocorre a inicialização de toda a memória passada por parâmetro, inclusive o owner da "mm",
+que é inicializado em "mm_init_owner()"
+
+```C
+    static void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
+    {
+    #ifdef CONFIG_MEMCG
+        mm->owner = p;
+    #endif
+    }
+```
+
+### Aloca PID
 
 * Aloca o PID e o atribui para o PID da *task*:
 
