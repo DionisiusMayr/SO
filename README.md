@@ -1175,7 +1175,7 @@ Em outras palavras, ele simplesmente inicializa uma lista duplamente encadeada.
 ```
 
 ### copy_mm
-A cópia das áreas de memória começa nesse procedimento. Aqui é verificado a flag "CLONE_VM" e a explicação do tratamento vem a seguir:
+A cópia das áreas de memória começa nesse procedimento. Aqui é verificada a flag "CLONE_VM" e a explicação do tratamento vem a seguir:
 
 ```C
     static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
@@ -1359,6 +1359,12 @@ a alocação na memória acontece pela macro "allocate_mm()"
 
 que aloca memória em "mm_cachep" que é um espaço reservado para alocações de todas as
 memórias ligadas à mm de task_struct.
+
+```C
+    /* SLAB cache for mm_struct structures (tsk->mm) */
+    static struct kmem_cache *mm_cachep;
+```
+
 O código da função "kmem_cache_alloc()" é apresentado abaixo (/mm/slab.c):
 
 ```C
@@ -1380,11 +1386,6 @@ O código da função "kmem_cache_alloc()" é apresentado abaixo (/mm/slab.c):
 
         return ret;
     }
-```
-
-```C
-    /* SLAB cache for mm_struct structures (tsk->mm) */
-    static struct kmem_cache *mm_cachep;
 ```
 
 a memória alocada em "mm_cahep" é atribuida para a "mm" da "task_struct" dentro de "mm_init()".
