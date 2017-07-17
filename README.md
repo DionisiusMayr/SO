@@ -1,5 +1,5 @@
 ### copymm
-A cópia de memória começa nesse procedimento. Aqui é verificado a flag ''CLONE_VM'' e a explicação do tratamento vem a seguir:
+A cópia das áreas de memória começa nesse procedimento. Aqui é verificado a flag "CLONE_VM" e a explicação do tratamento vem a seguir:
 
 ```C
     static int copy_mm(unsigned long clone_flags, struct task_struct *tsk)
@@ -49,7 +49,7 @@ A cópia de memória começa nesse procedimento. Aqui é verificado a flag ''CLO
     }
 ```
 
-Caso a flag ''CLONE_VM'' seja passado para ''copy_process()'', o ponteiro da memória do processo pai é passado para o filho.
+Caso a flag "CLONE_VM" seja passado para "copy_process()", o ponteiro da memória do processo pai é passado para o filho.
 Como fica evidenciado neste recorte de código:
 
 ```C
@@ -73,7 +73,7 @@ Como fica evidenciado neste recorte de código:
     }
 ```
 
-''mmget()'' simplesmente faz um incremento no número de usuários que apontam para aquela memória.
+"mmget()" simplesmente faz um incremento no número de usuários que apontam para aquela memória.
 
 ```C
     static inline void mmget(struct mm_struct *mm)
@@ -83,7 +83,7 @@ Como fica evidenciado neste recorte de código:
 ```
 
 Como é sabido, quando o contador de referência daquela memória chega a zero, ela fica marcada para ser liberada.
-Isso é comentado no kernel, na definição de ''mm_struct''.
+Isso é comentado no kernel, na definição de "mm_struct".
 
 ```C
     struct mm_struct {
@@ -111,7 +111,7 @@ Isso é comentado no kernel, na definição de ''mm_struct''.
     }
 ```
 
-Caso a flag ''CLONE_VM'' não seja passado para ''copy_process()'', será alocado uma nova posição na memória
+Caso a flag "CLONE_VM" não seja passado para "copy_process()", será alocado uma nova posição na memória
 e copiado o conteúdo da memória do pai nessa nova posição.
 
 ```C
@@ -131,8 +131,8 @@ e copiado o conteúdo da memória do pai nessa nova posição.
     }
 ```
 
-O procedimento ''dup_mm()'' é o responsável por alocar memória e copiar a memória do pai.
-Analisando o código do ''dup_mm()''
+O procedimento "dup_mm()" é o responsável por alocar memória e copiar a memória do pai.
+Analisando o código do "dup_mm()"
 
 ```C
     /*
@@ -175,13 +175,13 @@ Analisando o código do ''dup_mm()''
     }
 ```
 
-a alocação na memória acontece pela macro ''allocate_mm()''
+a alocação na memória acontece pela macro "allocate_mm()"
 
 ```C
     #define allocate_mm()	(kmem_cache_alloc(mm_cachep, GFP_KERNEL))
 ```
 
-que aloca memória em ''mm_cachep'' que é um espaço reservado para alocações de todas as
+que aloca memória em "mm_cachep" que é um espaço reservado para alocações de todas as
 memórias ligadas à mm de task_struct.
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA (FALAR DO GFP_KERNEL)
 
@@ -190,7 +190,7 @@ AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA (FALAR DO GFP_KERNEL)
     static struct kmem_cache *mm_cachep;
 ```
 
-a memória alocada em ''mm_cahep'' é atribuida para a ''mm'' da ''task_struct'' dentro de ''mm_init()''.
+a memória alocada em "mm_cahep" é atribuida para a "mm" da "task_struct" dentro de "mm_init()".
 
 ```C
     static struct mm_struct *mm_init(struct mm_struct *mm, struct task_struct *p,
@@ -245,8 +245,8 @@ a memória alocada em ''mm_cahep'' é atribuida para a ''mm'' da ''task_struct''
     }
 ```
 
-Em ''mm_init()'' ocorre a inicialização de toda a memória passada por parâmetro, inclusive o owner da ''mm'',
-que é inicializado em ''mm_init_owner()''
+Em "mm_init()" ocorre a inicialização de toda a memória passada por parâmetro, inclusive o owner da "mm",
+que é inicializado em "mm_init_owner()"
 
 ```C
     static void mm_init_owner(struct mm_struct *mm, struct task_struct *p)
