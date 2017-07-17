@@ -1358,7 +1358,7 @@ a alocação na memória acontece pela macro "allocate_mm()"
 ```
 
 que aloca memória em "mm_cachep" que é um espaço reservado para alocações de todas as
-memórias ligadas à mm de task_struct.
+memórias ligadas à mm de task_struct (/kernel/fork.c).
 
 ```C
     /* SLAB cache for mm_struct structures (tsk->mm) */
