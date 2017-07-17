@@ -890,7 +890,7 @@ ou seja, uma thread.
 *p* é a nova [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L483 task_struct]
 e *current* é a [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L483 task_struct] do chamador.
 
-Quando passado a *flag* [http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/linux/sched.h#L15 CLONE_THREAD],
+Quando passada a *flag* [http://elixir.free-electrons.com/linux/v4.11.7/source/include/uapi/linux/sched.h#L15 CLONE_THREAD],
 o [http://elixir.free-electrons.com/linux/v4.11.7/source/include/linux/sched.h#L617 tgid] do pai é passado para o filho.
 Ou seja, na visão do usuário, os dois processos tem o mesmo PID.
 
@@ -1225,7 +1225,7 @@ A cópia das áreas de memória começa nesse procedimento. Aqui é verificado a
     }
 ```
 
-Caso a flag "CLONE_VM" seja passado para "copy_process()", o ponteiro da memória do processo pai é passado para o filho.
+Caso a flag "CLONE_VM" seja passada para "copy_process()", o ponteiro da memória do processo pai é passado para o filho.
 Como fica evidenciado neste recorte de código:
 
 ```C
@@ -1287,7 +1287,7 @@ Isso é comentado no kernel, na definição de "mm_struct".
     }
 ```
 
-Caso a flag "CLONE_VM" não seja passado para "copy_process()", será alocado uma nova posição na memória
+Caso a flag "CLONE_VM" não seja passada para "copy_process()", será alocado uma nova posição na memória
 e copiado o conteúdo da memória do pai nessa nova posição.
 
 ```C
