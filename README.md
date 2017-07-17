@@ -183,6 +183,29 @@ a alocação na memória acontece pela macro "allocate_mm()"
 
 que aloca memória em "mm_cachep" que é um espaço reservado para alocações de todas as
 memórias ligadas à mm de task_struct.
+O código da função "kmem_cache_alloc()" é apresentado abaixo:
+
+```C
+/**
+ * kmem_cache_alloc - Allocate an object
+ * @cachep: The cache to allocate from.
+ * @flags: See kmalloc().
+ *
+ * Allocate an object from this cache.  The flags are only relevant
+ * if the cache has no available objects.
+ */
+void *kmem_cache_alloc(struct kmem_cache *cachep, gfp_t flags)
+{
+	void *ret = slab_alloc(cachep, flags, _RET_IP_);
+
+	kasan_slab_alloc(cachep, ret, flags);
+	trace_kmem_cache_alloc(_RET_IP_, ret,
+			       cachep->object_size, cachep->size, flags);
+
+	return ret;
+}
+```
+
 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA (FALAR DO GFP_KERNEL)
 
 ```C
